@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
             printf("Comando no valido\n");
         }
     }
-    parser_destroy(parser); 
+    parser_destroy(parser);
     parser = NULL;
-    return 0;	
+    return 0;
 }

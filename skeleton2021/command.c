@@ -1,4 +1,5 @@
-#include <stdio.h> 
+#include <assert.h>
+#include <stdio.h>
 #include <glib.h>
 
 #include "command.h"
@@ -11,25 +12,47 @@
  */
 
 struct scommand_s {
-    GSList *args;
+    GList * args;  // GSList
     char * redir_in;
     char * redir_out;
 };
 
 
 scommand scommand_new(void){
-	scommand new_command = malloc(sizeof(struct scommand_s));
-	new_command->args = NULL;
-	new_command->redir_in = NULL;
-	new_command->redir_out = NULL;
-    return new_command;    
+    scommand result = malloc(sizeof(struct scommand_s));
+    result->args = NULL;
+    result->redir_in = NULL;
+    result->redir_out = NULL;
+
+    assert(result != NULL &&
+        scommand_is_empty(result) &&
+        scommand_get_redir_in(result) == NULL &&
+        scommand_get_redir_out(result) == NULL
+    );
+
+    return result;
 }
 
 scommand scommand_destroy(scommand self){
-	return NULL;
+    printf("\nscommand\n");
+    assert(self != NULL);
+
+    if(self->args != NULL) {
+        printf("\nIF\n");
+        g_list_free(self->args);
+    }
+
+    free(self->redir_in); self->redir_in = NULL;
+    free(self->redir_out); self->redir_out = NULL;
+    free(self); self = NULL;
+
+    assert(self == NULL);
+
+    return self;
 }
 
 void scommand_push_back(scommand self, char * argument){
+    assert(self != NULL && argument != NULL);
 }
 
 void scommand_pop_front(scommand self){
@@ -42,27 +65,27 @@ void scommand_set_redir_out(scommand self, char * filename){
 }
 
 bool scommand_is_empty(const scommand self){
-	return true;
+    return true;
 }
 
 unsigned int scommand_length(const scommand self){
-	return 0;
+    return 0;
 }
 
 char * scommand_front(const scommand self){
-	return NULL;
+    return NULL;
 }
 
 char * scommand_get_redir_in(const scommand self){
-	return NULL;
+    return NULL;
 }
 
 char * scommand_get_redir_out(const scommand self){
-	return NULL;
+    return NULL;
 }
 
 char * scommand_to_string(const scommand self){
-	return NULL;
+    return NULL;
 }
 
 
@@ -83,11 +106,11 @@ struct pipeline_s {
 
 
 pipeline pipeline_new(void){
-	return NULL;
+    return NULL;
 }
 
 pipeline pipeline_destroy(pipeline self){
-	return NULL;
+    return NULL;
 }
 
 void pipeline_push_back(pipeline self, scommand sc){
@@ -100,23 +123,23 @@ void pipeline_set_wait(pipeline self, const bool w){
 }
 
 bool pipeline_is_empty(const pipeline self){
-	return true;
+    return true;
 }
 
 unsigned int pipeline_length(const pipeline self){
-	return 0;
+    return 0;
 }
 
 scommand pipeline_front(const pipeline self){
-	return NULL;
+    return NULL;
 }
 
 bool pipeline_get_wait(const pipeline self){
-	return true;
+    return true;
 }
 
 char * pipeline_to_string(const pipeline self){
-	return NULL;
+    return NULL;
 }
 
 
