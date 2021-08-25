@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <glib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -60,9 +61,13 @@ void scommand_pop_front(scommand self){
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
+	assert(self != NULL);
+	self->redir_in = filename;
 }
 
 void scommand_set_redir_out(scommand self, char * filename){
+	assert(self != NULL);
+	self->redir_out = filename;
 }
 
 bool scommand_is_empty(const scommand self){
@@ -85,11 +90,13 @@ char * scommand_front(const scommand self){
 }
 
 char * scommand_get_redir_in(const scommand self){
-    return NULL;
+	assert(self != NULL);
+    return (self->redir_in);
 }
 
 char * scommand_get_redir_out(const scommand self){
-    return NULL;
+	assert(self != NULL);
+    return (self->redir_out);
 }
 
 /* Concatena con un espacio en el medio al final de dest una
@@ -97,13 +104,21 @@ char * scommand_get_redir_out(const scommand self){
  * 
  * Requires: dest != NULL && src != NULL
  */
-/* static char * str_concat_con_espacio(char * dest, const char * src){
+static char * str_concat_con_espacio(char * dest, const char * src){
 	assert(dest != NULL && src != NULL);
 	
 	size_t dest_len = strlen(dest);
-	size_t src_len = str
+	size_t src_len = strlen(src);
 
-} */
+	size_t res_len = dest_len + sizeof(' ') + src_len;
+
+	dest = realloc(dest, res_len);
+
+	dest = strcat(dest, " "); // adds a ' '
+	dest = strcat(dest, src); // adds a copy of src
+
+	return(dest);
+}
 
 
 
