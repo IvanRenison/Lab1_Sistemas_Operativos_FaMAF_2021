@@ -12,7 +12,7 @@
  */
 
 struct scommand_s {
-    GList * args;  // GSList
+    GSList * args;
     char * redir_in;
     char * redir_out;
 };
@@ -33,15 +33,10 @@ scommand scommand_new(void){
     return result;
 }
 
-scommand scommand_destroy(scommand self){
-    printf("\nscommand\n");
+scommand scommand_destroy(scommand self) {
     assert(self != NULL);
 
-    if(self->args != NULL) {
-        printf("\nIF\n");
-        g_list_free(self->args);
-    }
-
+    g_slist_free(self->args);
     free(self->redir_in); self->redir_in = NULL;
     free(self->redir_out); self->redir_out = NULL;
     free(self); self = NULL;

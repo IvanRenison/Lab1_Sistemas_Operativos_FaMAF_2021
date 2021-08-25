@@ -6,6 +6,8 @@ int main(void) {
 
 /*     scommand comando = scommand_new();
 
+
+
     comando = scommand_destroy(comando); */
 
     GSList* xs = NULL;
