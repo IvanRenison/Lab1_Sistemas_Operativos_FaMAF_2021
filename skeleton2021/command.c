@@ -1,6 +1,8 @@
 #include <assert.h>
-#include <stdio.h>
 #include <glib.h>
+#include <stdio.h>
+#include <string.h>
+
 
 #include "command.h"
 
@@ -48,9 +50,13 @@ scommand scommand_destroy(scommand self) {
 
 void scommand_push_back(scommand self, char * argument){
     assert(self != NULL && argument != NULL);
+	self->args = g_slist_append(self->args, argument);
+	assert(!scommand_is_empty(self));
 }
 
 void scommand_pop_front(scommand self){
+	assert(self != NULL && !scommand_is_empty(self));
+	
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
@@ -60,11 +66,18 @@ void scommand_set_redir_out(scommand self, char * filename){
 }
 
 bool scommand_is_empty(const scommand self){
-    return true;
+	assert(self != NULL);
+   	return (self->args == NULL);
 }
 
 unsigned int scommand_length(const scommand self){
-    return 0;
+	assert(self != NULL);
+	unsigned int length = 0u;
+	if(!scommand_is_empty(self)){
+		length = g_slist_length(self->args);
+	}
+	assert((length == 0) == (scommand_is_empty(self)));
+    return length;
 }
 
 char * scommand_front(const scommand self){
@@ -79,8 +92,27 @@ char * scommand_get_redir_out(const scommand self){
     return NULL;
 }
 
+/* Concatena con un espacio en el medio al final de dest una
+ * copia de src realocando dest
+ * 
+ * Requires: dest != NULL && src != NULL
+ */
+/* static char * str_concat_con_espacio(char * dest, const char * src){
+	assert(dest != NULL && src != NULL);
+	
+	size_t dest_len = strlen(dest);
+	size_t src_len = str
+
+} */
+
+
+
 char * scommand_to_string(const scommand self){
-    return NULL;
+    
+	
+	
+
+	return(NULL);
 }
 
 

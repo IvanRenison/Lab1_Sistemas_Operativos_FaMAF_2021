@@ -119,7 +119,7 @@ char * scommand_get_redir_out(const scommand self);
  */
 
 char * scommand_to_string(const scommand self);
-/* Preety printer para hacer debugging/logging.
+/* Pretty printer para hacer debugging/logging.
  * Genera una representación del comando simple en un string (aka "serializar")
  *   self: comando simple a convertir.
  *   Returns: un string con la representación del comando simple similar
