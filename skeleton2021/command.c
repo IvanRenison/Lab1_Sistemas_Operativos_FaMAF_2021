@@ -18,7 +18,11 @@ struct scommand_s {
 
 
 scommand scommand_new(void){
-    return NULL;    
+	scommand new_command = malloc(sizeof(struct scommand_s));
+	new_command->args = NULL;
+	new_command->redir_in = NULL;
+	new_command->redir_out = NULL;
+    return new_command;    
 }
 
 scommand scommand_destroy(scommand self){
