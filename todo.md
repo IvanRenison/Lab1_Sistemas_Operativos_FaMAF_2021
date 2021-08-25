@@ -1,0 +1,2 @@
+- [ ] Transcribir lo importante de la consigna a [consigna.md](consigna.md)
+- [ ] 

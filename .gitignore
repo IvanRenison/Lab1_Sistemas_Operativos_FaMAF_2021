@@ -1,5 +1,10 @@
+# Archivos de compilación
 *.o
 
+# VSV
 .vscode
 
-
+#
+mybash
+skeleton2021/out.txt
+skeleton2021/.depend
