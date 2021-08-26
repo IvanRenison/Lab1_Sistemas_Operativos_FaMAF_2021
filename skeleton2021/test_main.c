@@ -4,7 +4,23 @@
 
 
 int main(void) {
-    char * arg1 = strdup("exec");
+    scommand comando = scommand_new();
+
+    char* word = strdup("Hola");
+    scommand_push_back(comando, word);
+    word = strdup("mundo");
+    scommand_push_back(comando, word);
+    word = strdup("");
+    scommand_push_back(comando, word);
+
+    scommand_pop_front(comando);
+
+    char* comandoLindo = scommand_to_string(comando);
+    printf("%s\n", comandoLindo);
+    comando = scommand_destroy(comando);
+    free(comandoLindo); comandoLindo = NULL;
+
+/*     char * arg1 = strdup("exec");
     char * arg2 = strdup("wc");
     char * redir_in = strdup("text.in");
     char * redir_out = strdup("text.out");
@@ -32,10 +48,10 @@ int main(void) {
     comando = scommand_destroy(comando);
     free(command);
     free(arg1);
-    free(arg2);
+    free(arg2); */
 
 
-    return(1);
+    return(EXIT_SUCCESS);
 }
 
 
