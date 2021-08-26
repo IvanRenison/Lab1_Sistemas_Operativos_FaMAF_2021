@@ -111,7 +111,7 @@ char * scommand_get_redir_out(const scommand self){
  *      xs = str_concat(xs, "string");
  * Requires: xs != NULL && ys != NULL
  */
-/* static char * str_concat(char * xs, const char * ys) {
+static char * str_concat(char * xs, const char * ys) {
     assert(xs != NULL && ys != NULL);
 
     size_t xs_len = strlen(xs);
@@ -122,15 +122,34 @@ char * scommand_get_redir_out(const scommand self){
 	xs = strcat(xs, ys);
 
     return(xs);
-} */
+}
 
 
 char * scommand_to_string(const scommand self){
-    //	GSList* xs = self->args;
+    GSList* xs = self->args;
+    char* result = malloc(sizeof('\0'));
+    result[0] = '\0';
 
+    if(xs != NULL) {
+        result = str_concat(result, xs->data);
+        while(xs->next != NULL) {
+            xs = xs->next;
+            result = str_concat(result, " ");
+            result = str_concat(result, xs->data);
+        }
+    }
+    
+    if(self->redir_out != NULL) {
+        result = str_concat(result, " > ");
+        result = str_concat(result, self->redir_out);
+    }
 
+    if(self->redir_in != NULL) {
+        result = str_concat(result, " < ");
+        result = str_concat(result, self->redir_in);
+    }
 
-    return(NULL);
+    return(result);
 }
 
 
