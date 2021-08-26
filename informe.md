@@ -9,6 +9,23 @@
     - [Syscall](#Syscall)
 - [Extra](#Extra:-nuestra-forma-de-trabajar)
 
+# ¿Cómo correrlo?
+
+## Test
+make
+
+gcc test_main.c command.o `pkg-config --cflags --libs glib
+
+./a.out
+
+## Debuger
+make
+
+gcc test_main.c command.o `pkg-config --cflags --libs glib
+
+valgrind ./a.out
+
+
 # Comprensión
 Explicaciones simples de lo que hemos ido comprendiendo de los conceptos que fuimos implementando
 

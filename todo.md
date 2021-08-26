@@ -1,2 +1,3 @@
 - [ ] Transcribir lo importante de la consigna a [consigna.md](consigna.md)
-- [ ] 
+- [ ] Terminar `scommand_to_string` en [command.c](skeleton2021/command.c)
+- [ ] Verificar que el TAD de command no tenga errores
