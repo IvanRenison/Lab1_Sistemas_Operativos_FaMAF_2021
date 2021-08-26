@@ -39,9 +39,11 @@ scommand scommand_new(void){
 scommand scommand_destroy(scommand self) {
     assert(self != NULL);
 
-    g_slist_free(self->args);
+    g_slist_free_full(self->args, free); self->args = NULL;
+
     free(self->redir_in); self->redir_in = NULL;
     free(self->redir_out); self->redir_out = NULL;
+
     free(self); self = NULL;
 
     assert(self == NULL);
