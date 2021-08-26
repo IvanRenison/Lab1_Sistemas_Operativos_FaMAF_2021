@@ -57,7 +57,8 @@ void scommand_push_back(scommand self, char * argument){
 
 void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
-	
+    // Quita la cadena de adelante de la secuencia de cadenas
+    self->args = g_slist_remove(self->args, g_slist_nth_data(self->args, 0));
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
@@ -72,7 +73,7 @@ void scommand_set_redir_out(scommand self, char * filename){
 
 bool scommand_is_empty(const scommand self){
 	assert(self != NULL);
-   	return (self->args == NULL);
+    return (self->args == NULL);
 }
 
 unsigned int scommand_length(const scommand self){
@@ -86,7 +87,10 @@ unsigned int scommand_length(const scommand self){
 }
 
 char * scommand_front(const scommand self){
-    return NULL;
+    assert(self != NULL && !scommand_is_empty(self));
+    char * result = g_slist_nth_data(self->args, 0);
+    assert(result != NULL);
+    return result;
 }
 
 char * scommand_get_redir_in(const scommand self){
@@ -99,35 +103,34 @@ char * scommand_get_redir_out(const scommand self){
     return (self->redir_out);
 }
 
-/* Concatena con un espacio en el medio al final de dest una
- * copia de src realocando dest
- * 
- * Requires: dest != NULL && src != NULL
+
+/* Concatena 2 string reallocando el primero para agregar el espacio necesario.
+ * xs tiene que ser un string dinamico, pero ys puede ser estático.
+ * Notar que es distinto de strmerge, ya que strmerge
+ * Uso: xs = str_concat(xs, ys);
+ *      xs = str_concat(xs, "string");
+ * Requires: xs != NULL && ys != NULL
  */
-static char * str_concat_con_espacio(char * dest, const char * src){
-	assert(dest != NULL && src != NULL);
-	
-	size_t dest_len = strlen(dest);
-	size_t src_len = strlen(src);
+/* static char * str_concat(char * xs, const char * ys) {
+    assert(xs != NULL && ys != NULL);
 
-	size_t res_len = dest_len + sizeof(' ') + src_len;
+    size_t xs_len = strlen(xs);
+    size_t ys_len = strlen(ys);
 
-	dest = realloc(dest, res_len);
+	xs = realloc(xs, xs_len + ys_len + sizeof('\0'));
 
-	dest = strcat(dest, " "); // adds a ' '
-	dest = strcat(dest, src); // adds a copy of src
+	xs = strcat(xs, ys);
 
-	return(dest);
-}
-
+    return(xs);
+} */
 
 
 char * scommand_to_string(const scommand self){
-    
-	
-	
+    //	GSList* xs = self->args;
 
-	return(NULL);
+
+
+    return(NULL);
 }
 
 
@@ -148,6 +151,12 @@ struct pipeline_s {
 
 
 pipeline pipeline_new(void){
+    //struct result = 
+    // assert(
+    //     //result != NULL &&
+    //     pipeline_is_empty(result) &&
+    //     pipeline_get_wait(result)
+    // )
     return NULL;
 }
 
@@ -156,6 +165,11 @@ pipeline pipeline_destroy(pipeline self){
 }
 
 void pipeline_push_back(pipeline self, scommand sc){
+    // assert(
+    //     self != NULL &&
+    //     sc != NULL &&
+        
+    // )
 }
 
 void pipeline_pop_front(pipeline self){
