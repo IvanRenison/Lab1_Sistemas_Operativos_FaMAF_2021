@@ -58,7 +58,7 @@ void scommand_push_back(scommand self, char * argument){
 void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
     // Quita la cadena de adelante de la secuencia de cadenas
-    self->args = g_slist_remove(self->args, g_slist_nth_data(self->args, 0));
+    self->args = g_slist_delete_link(self->args, g_slist_nth(self->args, 0));
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
