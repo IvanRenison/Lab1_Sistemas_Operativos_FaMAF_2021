@@ -98,13 +98,16 @@ unsigned int scommand_length(const scommand self){
 
 char * scommand_front(const scommand self){
     assert(self != NULL && !scommand_is_empty(self));
+
     char * result = g_slist_nth_data(self->args, 0);
+
     assert(result != NULL);
     return result;
 }
 
 char * scommand_get_redir_in(const scommand self){
 	assert(self != NULL);
+    
     return (self->redir_in);
 }
 
@@ -137,13 +140,12 @@ static char * str_concat(char * xs, const char * ys) {
 
 char * scommand_to_string(const scommand self){
     GSList* xs = self->args;
-    char* result = malloc(sizeof('\0'));
-    result[0] = '\0';
+    char* result = strdup("");
 
     if(xs != NULL) {
         result = str_concat(result, xs->data);
         while(xs->next != NULL) {
-            xs = xs->next;
+            xs = g_slist_next(xs);
             result = str_concat(result, " ");
             result = str_concat(result, xs->data);
         }
