@@ -70,26 +70,29 @@ void scommand_pop_front(scommand self){
 
 void scommand_set_redir_in(scommand self, char * filename){
 	assert(self != NULL);
+
 	self->redir_in = filename;
 }
 
 void scommand_set_redir_out(scommand self, char * filename){
 	assert(self != NULL);
+
 	self->redir_out = filename;
 }
 
 bool scommand_is_empty(const scommand self){
 	assert(self != NULL);
+
     return (self->args == NULL);
 }
 
 unsigned int scommand_length(const scommand self){
 	assert(self != NULL);
-	unsigned int length = 0u;
-	if(!scommand_is_empty(self)){
-		length = g_slist_length(self->args);
-	}
-	assert((length == 0) == (scommand_is_empty(self)));
+
+	unsigned int length = g_slist_length(self->args);
+    // g_slist_length devuelve un guint que es lo mismo que un unsigned int
+
+	assert((length == 0) == scommand_is_empty(self));
     return length;
 }
 
