@@ -43,7 +43,6 @@ int main(void) {
     printf("%d\n", scommand_length(comando));
     char * front = scommand_front(comando);
     printf("%s\n", front);
-    front = front;
     scommand_pop_front(comando);
     test1 = scommand_get_redir_in(comando);
     test2 = scommand_get_redir_out(comando);
@@ -51,9 +50,8 @@ int main(void) {
     printf("%s\n", test2);
     printf("%d\n", scommand_length(comando));
     comando = scommand_destroy(comando);
-    free(command);
-    free(arg1);
-    free(arg2); */
+    free(command); */
+
 
 
     return(EXIT_SUCCESS);
