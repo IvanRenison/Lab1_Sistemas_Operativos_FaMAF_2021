@@ -61,12 +61,11 @@ void scommand_push_back(scommand self, char * argument){
 
 void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
-    // Quita la cadena de adelante de la secuencia de cadenas
-//    self->args = g_slist_delete_link(self->args, g_slist_nth(self->args, 0));
-    free(self->args->data);
-    GSList* temp = self->args;
-    self->args = g_slist_next(self->args);
-    free(temp);
+
+    free(g_slist_nth_data(self->args, 0));  // Libera el primer elemento
+    GSList* temp = self->args;              // Obtiene el puntero a la cabeza de la lista
+    self->args = g_slist_next(self->args);  // Avansa la lista
+    free(temp);                             // Libera la cabeza de la lista
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
