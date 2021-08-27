@@ -102,8 +102,8 @@ char * scommand_front(const scommand self);
  * Toma la cadena de adelante de la secuencia de cadenas.
  *   self: comando simple al cual tomarle la cadena del frente.
  *   Returns: cadena del frente. La cadena retornada sigue siendo propiedad
- *     del TAD, y debería considerarse inválida si luego se llaman a
- *     modificadores del TAD. Hacer una copia si se necesita una cadena propia.
+ *     del TAD (osea que el llamador no debe modificarla ni liberarla)
+ *     Si se necesita una cadena propria hay que copiarla
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
@@ -113,7 +113,8 @@ char * scommand_get_redir_out(const scommand self);
 /*
  * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
  *   self: comando simple a decidir si está vacío.
- *   Returns: nombre del archivo a donde redirigir la entrada (salida)
+ *   Returns: nombre del archivo a donde redirigir la entrada (salida).
+ *     La cadena retornada sigue siendo propiedad del TAD
  *	o NULL si no está redirigida.
  * Requires: self!=NULL
  */
