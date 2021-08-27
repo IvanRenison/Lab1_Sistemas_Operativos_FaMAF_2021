@@ -65,7 +65,7 @@ void scommand_pop_front(scommand self){
 //    self->args = g_slist_delete_link(self->args, g_slist_nth(self->args, 0));
     free(self->args->data);
     GSList* temp = self->args;
-    self->args = self->args->next;
+    self->args = g_slist_next(self->args);
     free(temp);
 }
 
