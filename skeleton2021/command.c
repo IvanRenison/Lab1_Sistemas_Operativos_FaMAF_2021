@@ -182,17 +182,33 @@ struct pipeline_s {
 
 
 pipeline pipeline_new(void){
-    //struct result = 
-    // assert(
-    //     //result != NULL &&
-    //     pipeline_is_empty(result) &&
-    //     pipeline_get_wait(result)
-    // )
-    return NULL;
+    pipeline result = malloc(sizeof(struct pipeline_s));
+    result->scmds = NULL;
+    result->wait = true;
+
+    assert(result != NULL
+            && pipeline_is_empty(result)
+            && pipeline_get_wait(result)
+          );
+    return result;
+}
+
+/* g_slist_free_full necesita una función que devuelva void
+ * para liberar una lista de scommand se puede usar esta función
+ */ // Se debe poder hacer sin esta función
+static void void_scommand_destroy(void* self) {
+    scommand self2 = (scommand) self;
+    scommand_destroy(self2);
 }
 
 pipeline pipeline_destroy(pipeline self){
-    return NULL;
+    assert(self != NULL);
+
+    g_slist_free_full(self->scmds, void_scommand_destroy); self->scmds = NULL;
+    free(self); self = NULL;
+
+    assert(self == NULL);
+    return self;
 }
 
 void pipeline_push_back(pipeline self, scommand sc){
