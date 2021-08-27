@@ -10,10 +10,15 @@ int main(void) {
     scommand_push_back(comando, word);
     word = strdup("mundo");
     scommand_push_back(comando, word);
-    word = strdup("");
+    word = strdup("-Wall");
     scommand_push_back(comando, word);
 
-    scommand_pop_front(comando);
+    word = strdup("in.in");
+    scommand_set_redir_in(comando, word);
+    word = strdup("out.out");
+    scommand_set_redir_out(comando, word);
+
+    printf("%s\n", scommand_front(comando));
 
     char* comandoLindo = scommand_to_string(comando);
     printf("%s\n", comandoLindo);
