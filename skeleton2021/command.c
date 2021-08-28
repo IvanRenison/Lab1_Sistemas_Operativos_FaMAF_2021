@@ -213,7 +213,7 @@ void pipeline_push_back(pipeline self, scommand sc){
         sc != NULL
     );
 
-    g_slist_append(self->scmds, sc);
+    self->scmds = g_slist_append(self->scmds, sc);
 
     assert(!pipeline_is_empty(self));
 }
