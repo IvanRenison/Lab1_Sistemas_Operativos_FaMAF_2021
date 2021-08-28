@@ -139,6 +139,8 @@ static char * str_concat(char * xs, const char * ys) {
 
 
 char * scommand_to_string(const scommand self){
+    assert(self != NULL);
+
     GSList* xs = self->args;
     char* result = strdup("");
 
@@ -160,6 +162,11 @@ char * scommand_to_string(const scommand self){
         result = str_concat(result, " < ");
         result = str_concat(result, self->redir_in);
     }
+
+    assert(scommand_is_empty(self) ||
+            scommand_get_redir_in(self) == NULL || scommand_get_redir_out(self) == NULL ||
+            strlen(result ) > 0
+    );
 
     return(result);
 }
