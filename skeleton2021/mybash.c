@@ -8,7 +8,7 @@
 #include "prompt.h"
 
 
-int main(int argc, char *argv[]){
+/* int main(int argc, char *argv[]){
     Parser parser;
     pipeline pipe;
     bool quit = false;
@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     while (!quit) {
         show_prompt();
         pipe = parse_pipeline(parser);
-        quit = parser_at_eof(parser); /* Chequeo si hay que salir luego de ejecutar el comando */
+        quit = parser_at_eof(parser); // Chequeo si hay que salir luego de ejecutar el comando
 
         if (pipe != NULL) {
             quit = quit || builtin_is_exit(pipe);
@@ -30,4 +30,4 @@ int main(int argc, char *argv[]){
     parser_destroy(parser);
     parser = NULL;
     return 0;
-}
+} */
