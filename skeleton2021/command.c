@@ -300,16 +300,17 @@ char * pipeline_to_string(const pipeline self){
 
     if(commands != NULL) {
         result = append_scommand_to_string(result, g_slist_nth_data(commands, 0u));
+        commands = g_slist_next(commands);
 
         while(commands != NULL) {
-            commands = g_slist_next(commands);
             result = str_concat(result, " | ");
             result = append_scommand_to_string(result, g_slist_nth_data(commands, 0u));
+            commands = g_slist_next(commands);
         }
     }
 
     if(pipeline_get_wait(self)) {
-        result = str_concat(result, " &\n");
+        result = str_concat(result, " &");
     }
     // No se si es correcto imprimir el & en el caso de que el comando sea nulo
     // pero en bash no se puede poner solo un &
