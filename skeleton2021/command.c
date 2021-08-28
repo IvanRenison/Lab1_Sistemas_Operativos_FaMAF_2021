@@ -146,10 +146,11 @@ char * scommand_to_string(const scommand self){
 
     if(xs != NULL) {
         result = str_concat(result, xs->data);
-        while(xs->next != NULL) {
-            xs = g_slist_next(xs);
+        xs = g_slist_next(xs);
+        while(xs != NULL) {
             result = str_concat(result, " ");
-            result = str_concat(result, xs->data);
+            result = str_concat(result, g_slist_nth_data(xs, 0u));
+            xs = g_slist_next(xs);
         }
     }
 
