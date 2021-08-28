@@ -53,7 +53,7 @@ scommand scommand_destroy(scommand self) {
 
 void scommand_push_back(scommand self, char * argument){
     assert(self != NULL && argument != NULL);
-    
+
 	self->args = g_slist_append(self->args, argument);
 
 	assert(!scommand_is_empty(self));
@@ -107,7 +107,7 @@ char * scommand_front(const scommand self){
 
 char * scommand_get_redir_in(const scommand self){
 	assert(self != NULL);
-    
+
     return (self->redir_in);
 }
 
@@ -150,7 +150,7 @@ char * scommand_to_string(const scommand self){
             result = str_concat(result, xs->data);
         }
     }
-    
+
     if(self->redir_out != NULL) {
         result = str_concat(result, " > ");
         result = str_concat(result, self->redir_out);
@@ -165,9 +165,6 @@ char * scommand_to_string(const scommand self){
 }
 
 
-
-
-
 /********** COMANDO PIPELINE **********/
 
 /* Estructura correspondiente a un comando pipeline.
@@ -179,17 +176,15 @@ struct pipeline_s {
     bool wait;
 };
 
-
-
 pipeline pipeline_new(void){
     pipeline result = malloc(sizeof(struct pipeline_s));
     result->scmds = NULL;
     result->wait = true;
 
     assert(result != NULL
-            && pipeline_is_empty(result)
-            && pipeline_get_wait(result)
-          );
+        && pipeline_is_empty(result)
+        && pipeline_get_wait(result)
+    );
     return result;
 }
 
@@ -212,37 +207,77 @@ pipeline pipeline_destroy(pipeline self){
 }
 
 void pipeline_push_back(pipeline self, scommand sc){
-    // assert(
-    //     self != NULL &&
-    //     sc != NULL &&
-        
-    // )
+    // El TAD se apropia del comando
+    assert(
+        self != NULL &&
+        sc != NULL
+    );
+
+    g_slist_append(self->scmds, sc);
+
+    assert(!pipeline_is_empty(self));
 }
 
 void pipeline_pop_front(pipeline self){
 }
 
 void pipeline_set_wait(pipeline self, const bool w){
+    assert(self != NULL);
+
+    self->wait = w;
 }
 
 bool pipeline_is_empty(const pipeline self){
-    return true;
+    assert(self != NULL);
+
+    return (g_slist_length(self->scmds) == 0);
 }
 
 unsigned int pipeline_length(const pipeline self){
-    return 0;
+    assert(self != NULL);
+
+    return g_slist_length(self->scmds);
 }
 
 scommand pipeline_front(const pipeline self){
-    return NULL;
+    assert(self != NULL && !pipeline_is_empty(self));
+
+    scommand result = pipeline_get_command(self->scmds, 0);
+
+    assert(result!=NULL);
+
+    return result;
+}
+
+static scommand pipeline_get_command(const pipeline self, unsigned int n){
+    assert(self != NULL);
+
+    return g_slist_nth(self->scmds, n);
 }
 
 bool pipeline_get_wait(const pipeline self){
-    return true;
+    assert(self != NULL);
+
+    return self->wait;
 }
 
 char * pipeline_to_string(const pipeline self){
-    return NULL;
+    assert(self != NULL);
+
+    char * result = "";
+
+    for(unsigned int i=0; i < pipeline_length(self); i++){
+        char * myChar = scommand_to_string(pipeline_get_command(self, i));
+        if(i != 0){
+            result = str_concat(result, " | ");
+        }
+        result = str_concat(result, myChar);
+    }
+
+    assert(
+        pipeline_is_empty(self) ||
+        pipeline_get_wait(self) || strlen(result)>0
+    );
+
+    return result;
 }
-
-
