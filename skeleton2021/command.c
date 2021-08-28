@@ -236,6 +236,12 @@ void pipeline_push_back(pipeline self, scommand sc){
 }
 
 void pipeline_pop_front(pipeline self){
+    assert(self != NULL && !pipeline_is_empty(self));
+
+    scommand_destroy(g_slist_nth_data(self->scmds, 0u)); // Destruye el primer scommand
+    GSList* temp = self->scmds;                          // Obtiene el puntero a la cabeza de la lista
+    self->scmds = g_slist_next(self->scmds);             // Avansa la lista
+    free(temp);                                          // Libera la cabeza de la lista
 }
 
 void pipeline_set_wait(pipeline self, const bool w){
