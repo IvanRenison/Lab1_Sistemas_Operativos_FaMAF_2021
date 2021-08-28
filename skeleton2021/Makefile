@@ -23,16 +23,16 @@ $(TARGET): $(OBJECTS) $(PRECOMPILED)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS) .depend *~
-#	make -C tests clean
+	make -C tests clean
 
-#test: $(OBJECTS)
-#	make -C tests test
+test: $(OBJECTS)
+	make -C tests test
 
-#test-command: command.o
-#	make -C tests test-command
+test-command: command.o
+	make -C tests test-command
 
-#memtest: $(OBJECTS)
-#	make -C tests memtest
+memtest: $(OBJECTS)
+	make -C tests memtest
 
 .depend: $(SOURCES)
 	$(CC) $(CPPFLAGS) -MM $^ > $@
