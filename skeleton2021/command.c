@@ -59,10 +59,10 @@ void scommand_push_back(scommand self, char * argument){
 	assert(!scommand_is_empty(self));
 }
 
-void scommand_pop_front(scommand self){
+void scommand_pop_front(scommand self){ // Anda mal para quitar el último elemento
 	assert(self != NULL && !scommand_is_empty(self));
 
-    free(g_slist_nth_data(self->args, 0u));  // Libera el primer elemento
+    free(g_slist_nth_data(self->args, 0u)); // Libera el primer elemento
     GSList* temp = self->args;              // Obtiene el puntero a la cabeza de la lista
     self->args = g_slist_next(self->args);  // Avansa la lista
     free(temp);                             // Libera la cabeza de la lista
