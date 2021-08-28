@@ -14,14 +14,14 @@
 ## Test
 make
 
-gcc test_main.c command.o `pkg-config --cflags --libs glib
+gcc test_main.c command.o `pkg-config --cflags --libs glib`
 
 ./a.out
 
 ## Debuger
 make
 
-gcc test_main.c command.o `pkg-config --cflags --libs glib
+gcc test_main.c command.o `pkg-config --cflags --libs glib`
 
 valgrind ./a.out
 
@@ -59,7 +59,7 @@ valgrind --suppressions=/usr/share/glib-2.0/valgrind/glib.supp --show-reachable=
 Al utilizar el test_main.c para probar las funciones del TAD, los strings que se utilizen para
 pasar como argumentos deben ser creados asignando memoria dinámica, ya que en la función scommand_destroy se libera la memoria ocupada por los mismos y si se declara el puntero de manera estática el mismo se cargará en el heap y va a causar un error cuando se intente liberar la memoria, se recomienda utilizar directamente las funciones strdup() y strndup() para la creación de strings.
 
-Referencia: 
+Referencia:
 > https://www.geeksforgeeks.org/strdup-strdndup-functions-c/
 > https://stackoverflow.com/questions/20297524/c-free-invalid-pointer
 

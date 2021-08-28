@@ -16,10 +16,10 @@
 ## Sobre la entrega del lab
 
 El proyecto deberá:
-1) Ejecutar comandos simples con sus correspondientes argumentos y redireccionesde entrada y salida.
+1) Ejecutar comandos simples con sus correspondientes argumentos y redirecciones de entrada y salida.
 2) Manejarpipelinesde hasta doscomandos simples.
-3) Preservar las buenas prácticas de programación ya adquieridasdurante los cursos anteriores (algoritmos 1 y 2).
-4) Escribir un pequeño informe que detalle cómo compilar su código y listar los comandos que ustedes probaron. Además, reportar sobre las decisiones de implementación que se tomaron durante el proceso de desarrollo de su bash y/o todo aquello que ustedes consideren relevante.La entrega se hará directamente mediante un commit  en el sistema de control de revisiones(bitbucket) que les asigna la cátedra.
+3) Preservar las buenas prácticas de programación ya adquieridas durante los cursos anteriores (algoritmos 1 y 2).
+4) Escribir un pequeño informe que detalle cómo compilar su código y listar los comandos que ustedes probaron. Además, reportar sobre las decisiones de implementación que se tomaron durante el proceso de desarrollo de su bash y/o todo aquello que ustedes consideren relevante.La entrega se hará directamente mediante un commit en el sistema de control de revisiones (bitbucket) que les asigna la cátedra.
 
 > **Deadline: Lunes 13/09/2021 hasta las 23:59 hs (ARG) !!!**
 

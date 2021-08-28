@@ -1,3 +1,5 @@
 - [ ] Transcribir lo importante de la consigna a [consigna.md](consigna.md)
-- [ ] Terminar `scommand_to_string` en [command.c](skeleton2021/command.c)
+- [x] Terminar `scommand_to_string` en [command.c](skeleton2021/command.c)
 - [ ] Verificar que el TAD de command no tenga errores
+- [ ] Verificar los comandos añadidos de las pipelines
+- [ ] Implementar `pipeline_pop_front` en [command.c](skeleton2021/command.c)
