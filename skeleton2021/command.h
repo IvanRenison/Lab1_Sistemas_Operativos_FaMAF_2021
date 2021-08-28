@@ -128,8 +128,8 @@ char * scommand_to_string(const scommand self);
  *     resultante.
  * Requires: self!=NULL
  * Ensures: scommand_is_empty(self) ||
- *   scommand_get_redir_in(self)==NULL || scommand_get_redir_out(self)==NULL ||
- *   strlen(result)>0
+ *   scommand_get_redir_in(self) == NULL || scommand_get_redir_out(self) == NULL ||
+ *   strlen(result ) > 0
  */
 
 
