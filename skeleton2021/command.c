@@ -230,7 +230,7 @@ void pipeline_set_wait(pipeline self, const bool w){
 bool pipeline_is_empty(const pipeline self){
     assert(self != NULL);
 
-    return (g_slist_length(self->scmds) == 0);
+    return (self->scmds == NULL);
 }
 
 unsigned int pipeline_length(const pipeline self){
