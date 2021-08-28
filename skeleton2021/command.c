@@ -259,18 +259,18 @@ unsigned int pipeline_length(const pipeline self){
 scommand pipeline_front(const pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
 
-    scommand result = pipeline_get_command(self, 0);
+    scommand result = g_slist_nth_data(self->scmds, 0u);//pipeline_get_command(self, 0u);
 
-    assert(result!=NULL);
+    assert(result != NULL);
 
     return result;
 }
 
-static scommand pipeline_get_command(const pipeline self, unsigned int n){
+/* static scommand pipeline_get_command(const pipeline self, unsigned int n){
     assert(self != NULL);
 
-    return g_slist_nth(self->scmds, n);
-}
+    return g_slist_nth_data(self->scmds, n);
+} */
 
 bool pipeline_get_wait(const pipeline self){
     assert(self != NULL);
