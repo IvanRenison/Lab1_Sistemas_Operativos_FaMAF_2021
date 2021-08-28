@@ -259,7 +259,7 @@ unsigned int pipeline_length(const pipeline self){
 scommand pipeline_front(const pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
 
-    scommand result = pipeline_get_command(self->scmds, 0);
+    scommand result = pipeline_get_command(self, 0);
 
     assert(result!=NULL);
 
