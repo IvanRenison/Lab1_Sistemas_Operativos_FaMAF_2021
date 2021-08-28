@@ -14,5 +14,3 @@ bool builtin_is_internal(pipeline pipe){
 
 void builtin_exec(pipeline pipe){
 }
-
-
