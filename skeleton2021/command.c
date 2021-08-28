@@ -165,6 +165,23 @@ char * scommand_to_string(const scommand self){
 }
 
 
+/* Agrega en chars una representación del comando self
+ * para hacerlo realoca la memoría
+ * Requires: chars != NULL && self != NULL
+ */
+static char * append_scommand_to_string(char * chars, const scommand self) {
+    assert(chars != NULL && self != NULL);
+
+
+    char * myChar = scommand_to_string(self);
+    chars = str_concat(chars, myChar);
+    free(myChar); myChar = NULL;
+
+    return(chars);
+}
+
+
+
 /********** COMANDO PIPELINE **********/
 
 /* Estructura correspondiente a un comando pipeline.
@@ -264,7 +281,27 @@ bool pipeline_get_wait(const pipeline self){
 char * pipeline_to_string(const pipeline self){
     assert(self != NULL);
 
-    char * result = "";
+    GSList* commands = self->scmds;
+    char * result = strdup("");
+
+    if(commands != NULL) {
+        result = append_scommand_to_string(result, g_slist_nth_data(commands, 0));
+
+        while(commands != NULL) {
+            commands = g_slist_next(commands);
+            result = str_concat(result, " | ");
+            result = append_scommand_to_string(result, g_slist_nth_data(commands, 0));
+        }
+    }
+
+    if(pipeline_get_wait(self)) {
+        result = str_concat(result, " &\n");
+    }
+    // No se si es correcto imprimir el & en el caso de que el comando sea nulo
+    // pero en bash no se puede poner solo un &
+    // también, no se si está bien poner el \n, pero supongo que si
+
+/*     char * result = "";
 
     for(unsigned int i=0; i < pipeline_length(self); i++){
         char * myChar = scommand_to_string(pipeline_get_command(self, i));
@@ -272,11 +309,11 @@ char * pipeline_to_string(const pipeline self){
             result = str_concat(result, " | ");
         }
         result = str_concat(result, myChar);
-    }
+    } */
 
     assert(
         pipeline_is_empty(self) ||
-        pipeline_get_wait(self) || strlen(result)>0
+        pipeline_get_wait(self) || strlen(result) > 0
     );
 
     return result;
