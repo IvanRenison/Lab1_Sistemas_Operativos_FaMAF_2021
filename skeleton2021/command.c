@@ -62,7 +62,7 @@ void scommand_push_back(scommand self, char * argument){
 void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
 
-    free(g_slist_nth_data(self->args, 0));  // Libera el primer elemento
+    free(g_slist_nth_data(self->args, 0u));  // Libera el primer elemento
     GSList* temp = self->args;              // Obtiene el puntero a la cabeza de la lista
     self->args = g_slist_next(self->args);  // Avansa la lista
     free(temp);                             // Libera la cabeza de la lista
@@ -99,7 +99,7 @@ unsigned int scommand_length(const scommand self){
 char * scommand_front(const scommand self){
     assert(self != NULL && !scommand_is_empty(self));
 
-    char * result = g_slist_nth_data(self->args, 0);
+    char * result = g_slist_nth_data(self->args, 0u);
 
     assert(result != NULL);
     return result;
@@ -291,12 +291,12 @@ char * pipeline_to_string(const pipeline self){
     char * result = strdup("");
 
     if(commands != NULL) {
-        result = append_scommand_to_string(result, g_slist_nth_data(commands, 0));
+        result = append_scommand_to_string(result, g_slist_nth_data(commands, 0u));
 
         while(commands != NULL) {
             commands = g_slist_next(commands);
             result = str_concat(result, " | ");
-            result = append_scommand_to_string(result, g_slist_nth_data(commands, 0));
+            result = append_scommand_to_string(result, g_slist_nth_data(commands, 0u));
         }
     }
 
