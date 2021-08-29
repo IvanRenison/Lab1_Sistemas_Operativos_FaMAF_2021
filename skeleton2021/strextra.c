@@ -15,7 +15,7 @@ char * strmerge(char *s1, char *s2) {
     return merge;
 }
 
-static char * str_concat(char * s1, const char * s2) {
+char * str_concat(char * s1, const char * s2) {
     assert(s1 != NULL && s2 != NULL);
 
     size_t s1_len = strlen(s1);

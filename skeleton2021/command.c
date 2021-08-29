@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "command.h"
+#include "strextra.h"
 
 
 /********** COMANDO SIMPLE **********/
@@ -208,7 +209,7 @@ pipeline pipeline_new(void){
  * para liberar una lista de scommand se puede usar esta función
  */ // Se debe poder hacer sin esta función
 static void void_scommand_destroy(void* self) {
-    scommand self2 = (scommand) self;
+    scommand self2 = self;
     scommand_destroy(self2);
 }
 
@@ -268,12 +269,6 @@ scommand pipeline_front(const pipeline self){
     return result;
 }
 
-/* static scommand pipeline_get_command(const pipeline self, unsigned int n){
-    assert(self != NULL);
-
-    return g_slist_nth_data(self->scmds, n);
-} */
-
 bool pipeline_get_wait(const pipeline self){
     assert(self != NULL);
 
@@ -300,16 +295,6 @@ char * pipeline_to_string(const pipeline self){
             result = str_concat(result, " &");
         }
     }
-
-/*     char * result = "";
-
-    for(unsigned int i=0; i < pipeline_length(self); i++){
-        char * myChar = scommand_to_string(pipeline_get_command(self, i));
-        if(i != 0){
-            result = str_concat(result, " | ");
-        }
-        result = str_concat(result, myChar);
-    } */
 
     assert(
         pipeline_is_empty(self) ||

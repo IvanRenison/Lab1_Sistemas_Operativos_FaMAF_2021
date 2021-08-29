@@ -31,6 +31,6 @@ char * strmerge(char *s1, char *s2);
  * Requires: s1 != NULL && s2 != NULL
  *
  */
-static char * str_concat(char * s1, const char * s2);
+char * str_concat(char * s1, const char * s2);
 
 #endif

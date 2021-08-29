@@ -18,5 +18,5 @@ bool builtin_is_internal(pipeline pipe){
 }
 
 void builtin_exec(pipeline pipe){
-	prinf("builtin_exec\n");
+//	prinf("builtin_exec\n");
 }
