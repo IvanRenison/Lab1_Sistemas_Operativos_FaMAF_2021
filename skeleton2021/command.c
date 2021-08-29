@@ -324,10 +324,6 @@ char * pipeline_to_string(const pipeline self){
         }
     }
 
-    // No se si es correcto imprimir el & en el caso de que el comando sea nulo
-    // pero en bash no se puede poner solo un &
-    // también, no se si está bien poner el \n, pero supongo que si
-
 /*     char * result = "";
 
     for(unsigned int i=0; i < pipeline_length(self); i++){
