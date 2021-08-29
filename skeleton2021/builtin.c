@@ -1,9 +1,14 @@
+#include <assert.h>
+#include <stdio.h>
+
 #include "builtin.h"
 
 bool builtin_is_exit(pipeline pipe){
-	return false;
+	assert(pipe != NULL);
 
+	return false;
 }
+
 bool builtin_is_cd(pipeline pipe){
 	return false;
 }
@@ -13,4 +18,5 @@ bool builtin_is_internal(pipeline pipe){
 }
 
 void builtin_exec(pipeline pipe){
+	prinf("builtin_exec\n");
 }

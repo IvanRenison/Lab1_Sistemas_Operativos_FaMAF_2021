@@ -1,9 +1,8 @@
-#include <assert.h>
 #include <glib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 #include "command.h"
 
@@ -127,7 +126,7 @@ char * scommand_get_redir_in(const scommand self){
 
 char * scommand_get_redir_out(const scommand self){
 	assert(self != NULL);
-    
+
     return (self->redir_out);
 }
 
@@ -180,7 +179,6 @@ static char * append_scommand_to_string(char * chars, const scommand self) {
 
     return(chars);
 }
-
 
 
 /********** COMANDO PIPELINE **********/

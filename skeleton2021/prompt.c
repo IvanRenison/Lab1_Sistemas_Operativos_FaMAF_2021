@@ -6,5 +6,3 @@ void show_prompt(void){
     printf ("mybash> ");
     fflush (stdout);
 }
-
-
