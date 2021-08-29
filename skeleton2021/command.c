@@ -318,11 +318,12 @@ char * pipeline_to_string(const pipeline self){
             result = append_scommand_to_string(result, g_slist_nth_data(commands, 0u));
             commands = g_slist_next(commands);
         }
+
+        if(!pipeline_get_wait(self)) {
+            result = str_concat(result, " &");
+        }
     }
 
-    if(pipeline_get_wait(self)) {
-        result = str_concat(result, " &");
-    }
     // No se si es correcto imprimir el & en el caso de que el comando sea nulo
     // pero en bash no se puede poner solo un &
     // también, no se si está bien poner el \n, pero supongo que si
