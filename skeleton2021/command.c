@@ -59,13 +59,27 @@ void scommand_push_back(scommand self, char * argument){
 	assert(!scommand_is_empty(self));
 }
 
-void scommand_pop_front(scommand self){ // Anda mal para quitar el último elemento
+/* Elimina el primer elemento de una lista no vacía, destrullendolo con free_func
+ * Requires: xs != NULL && free_func != NULL
+ */
+static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
+    assert(xs != NULL && free_func != NULL);
+
+    GSList* head = xs;
+
+    GSList* result = g_slist_remove_link(xs, head);
+    // head se vuelve una lista con un solo nodo
+
+    g_slist_free_full(head, free_func); head = NULL;
+
+    return(result);
+}
+
+
+void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
 
-    free(g_slist_nth_data(self->args, 0u)); // Libera el primer elemento
-    GSList* temp = self->args;              // Obtiene el puntero a la cabeza de la lista
-    self->args = g_slist_next(self->args);  // Avansa la lista
-    free(temp);                             // Libera la cabeza de la lista
+    self->args = g_slist_tail_free_full(self->args, free);
 }
 
 void scommand_set_redir_in(scommand self, char * filename){
@@ -246,10 +260,7 @@ void pipeline_push_back(pipeline self, scommand sc){
 void pipeline_pop_front(pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
 
-    scommand_destroy(g_slist_nth_data(self->scmds, 0u)); // Destruye el primer scommand
-    GSList* temp = self->scmds;                          // Obtiene el puntero a la cabeza de la lista
-    self->scmds = g_slist_next(self->scmds);             // Avansa la lista
-    free(temp);                                          // Libera la cabeza de la lista
+    self->scmds = g_slist_tail_free_full(self->scmds, void_scommand_destroy);
 }
 
 void pipeline_set_wait(pipeline self, const bool w){
