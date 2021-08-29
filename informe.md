@@ -40,6 +40,10 @@ valgrind ./a.out
 # Comprensión
 Explicaciones simples de lo que hemos ido comprendiendo de los conceptos que fuimos implementando
 
+## Archivos .h
+
+Decidimos invertir el orden de las descripciones de las funciones para que en los editores de texto al pasar el cursor por encima se logre visualizar el mismo y que no sea necesario entrar a *recordar* el código de esa función o ir directamente al archivo **.h**. Esto nos permite ahorrarnos tiempos.
+
 ## Valgrind: memory leaks de la librería
 **Primer intento de solucionarlo**
 
@@ -75,6 +79,9 @@ Referencia:
 > https://www.geeksforgeeks.org/strdup-strdndup-functions-c/
 
 > https://stackoverflow.com/questions/20297524/c-free-invalid-pointer
+
+## Builtin
+
 
 ## Syscall
 
