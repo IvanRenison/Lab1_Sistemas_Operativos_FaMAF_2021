@@ -69,8 +69,7 @@ valgrind --suppressions=/usr/share/glib-2.0/valgrind/glib.supp --show-reachable=
 
 ## Command
 ### Test
-Al utilizar el `test_main.c` para probar las funciones del TAD, los strings que se utilizen para
-pasar como argumentos deben ser creados asignando memoria dinámica, ya que en la función `scommand_destroy` se libera la memoria ocupada por los mismos y si se declara el puntero de manera estática el mismo se cargará en el heap y va a causar un error cuando se intente liberar la memoria, se recomienda utilizar directamente las funciones `strdup()` y `strndup()` para la creación de strings.
+Al utilizar el `test_main.c` para probar las funciones del TAD, los strings que se utilizen para pasar como argumentos deben ser creados asignando memoria dinámica, ya que en la función `scommand_destroy` se libera la memoria ocupada por los mismos y si se declara el puntero de manera estática el mismo se cargará en el heap y va a causar un error cuando se intente liberar la memoria, se recomienda utilizar directamente las funciones `strdup()` y `strndup()` para la creación de strings.
 
 Referencia:
 > https://www.geeksforgeeks.org/strdup-strdndup-functions-c/

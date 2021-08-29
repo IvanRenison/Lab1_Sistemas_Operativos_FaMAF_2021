@@ -3,6 +3,5 @@
 - [x] Verificar que el TAD de command no tenga errores
 - [x] Verificar los comandos añadidos de las pipelines
 - [x] Implementar `pipeline_pop_front` en [command.c](skeleton2021/command.c)
-
 - [x] Los `pop_front` tanto de `pipeline` como de `scommand` andan mal cuando queda un solo elemento
-
+- [x] Se verifica que `scommand_pop_front` funcione correctamente, se cambia la implementación de la función

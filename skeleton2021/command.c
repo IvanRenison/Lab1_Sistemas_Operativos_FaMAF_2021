@@ -65,12 +65,12 @@ void scommand_push_back(scommand self, char * argument){
 static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
     assert(xs != NULL && free_func != NULL);
 
-    GSList* head = xs;
+    gpointer head = g_slist_nth_data(xs, 0);
 
-    GSList* result = g_slist_remove_link(xs, head);
+    GSList* result = g_slist_remove(xs, head);
     // head se vuelve una lista con un solo nodo
 
-    g_slist_free_full(head, free_func); head = NULL;
+    free(head);
 
     return(result);
 }
@@ -127,6 +127,7 @@ char * scommand_get_redir_in(const scommand self){
 
 char * scommand_get_redir_out(const scommand self){
 	assert(self != NULL);
+    
     return (self->redir_out);
 }
 
