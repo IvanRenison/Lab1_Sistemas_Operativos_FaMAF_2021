@@ -131,28 +131,6 @@ char * scommand_get_redir_out(const scommand self){
     return (self->redir_out);
 }
 
-
-/* Concatena 2 string reallocando el primero para agregar el espacio necesario.
- * xs tiene que ser un string dinamico, pero ys puede ser estático.
- * Notar que es distinto de strmerge, ya que strmerge
- * Uso: xs = str_concat(xs, ys);
- *      xs = str_concat(xs, "string");
- * Requires: xs != NULL && ys != NULL
- */
-static char * str_concat(char * xs, const char * ys) {
-    assert(xs != NULL && ys != NULL);
-
-    size_t xs_len = strlen(xs);
-    size_t ys_len = strlen(ys);
-
-	xs = realloc(xs, xs_len + ys_len + sizeof('\0'));
-
-	xs = strcat(xs, ys);
-
-    return(xs);
-}
-
-
 char * scommand_to_string(const scommand self){
     assert(self != NULL);
 
