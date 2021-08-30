@@ -8,58 +8,28 @@
 
 int main(void) {
 
-/*     scommand command = scommand_new();
+    scommand command = scommand_new();
     scommand_push_back(command, strdup("cd"));
-    scommand_push_back(command, strdup(".."));
-
-    char* primero = scommand_front(command);
-    printf("%s\n", primero);
-
-    command = scommand_destroy(command); */
-
-    //pipeline pipe = pipeline_new();
-/*     scommand command = scommand_new();
-    scommand_push_back(command, strdup("cd"));
-    scommand_push_back(command, strdup("~/Desktop")); */
-
-/*  char* current = malloc(1000);
-    current = getcwd(current, 1000);
-    printf("%s\n", current);
-
-
-    printf("CHDIR: %d\n", chdir("~/Desktop"));
-
-    perror("~/Desktop");
-
-    char* c = scommand_to_string(command);
-    printf("%s\n", c);
-    free(c); 
-
-
-    builtin_scommand_exec(command);
-
-    current = getcwd(current, 1000);
-    printf("%s\n", current);
-    free(current);
-
-    command = scommand_destroy(command);*/
+    scommand_push_back(command, strdup("..//.vscode"));
 
     char* current = malloc(1000);
     current = getcwd(current, 1000);
     printf("%s\n", current);
+    free(current);
 
-    scommand comando = scommand_new();
-    char * arg1 = strdup("cd");
-    char * arg2 = strdup("~");
-    scommand_push_back(comando, arg1);
-    scommand_push_back(comando, arg2);
-    builtin_scommand_exec(comando);
+    pipeline p = pipeline_new();
+    pipeline_push_back(p, command);
 
+    builtin_single_pipeline_exec(p);
+    
+    current = malloc(1000);
     current = getcwd(current, 1000);
     printf("%s\n", current);
-
     free(current);
-    scommand_destroy(comando);
+
+
+    p = pipeline_destroy(p);
+
 
     return(EXIT_SUCCESS);
 }

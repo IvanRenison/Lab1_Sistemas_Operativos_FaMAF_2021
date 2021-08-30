@@ -8,7 +8,8 @@
     - [x] Se verifica que `scommand_pop_front` funcione correctamente, se cambia la implementación de la función
 
 - **builtin**:
-    - [ ] Agregar soporte para usar `'~'` para referirse al home en `builtin`
+    - [ ] Agregar soporte para usar `'~'` para referirse al home en `builtin` (teniendo en cuenta el caso de que haya una carpeta cuyo nombre empiece con `~`).
+    En bash en el caso de que hay una carpeta cuyo nombre empieza con `~` y tiene mas letras, se puede entrar a la carpeta con `cd ~nombreDeLaCarpeta` o con `cd \~nombreDeLaCarpeta` y en caso de que la carpeta se llame `~` solo, se puede entrar con `cd \~`
 
 
 - Agregar comprensión en [informe.md](informe.md) de la parte de:

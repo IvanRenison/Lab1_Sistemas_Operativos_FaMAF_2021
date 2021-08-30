@@ -45,32 +45,34 @@ static void builtin_run_cd(const scommand cmd){
     assert(cmd != NULL && builtin_scommand_is_cd(cmd));
     
     unsigned int length = scommand_length(cmd);
-    if(length == 2u || length == 1u){
+    if(length == 2u){
+        char * input_path = scommand_get_nth(cmd, 1u);
+        int ret_code = 0;
+
         /* Si el argumento de chdir comienza con / el path se toma desde equipo
            (ósea como path absoluto) y si empieza con ./ o sin nada se toma desde
            el directorio actual. También, chdir acepta .. para ir un directorio
            para arriba.
            
-           En bash ademas de poderse usar esos comienzos, se puede usar ~ para
-           que el path sea desde el home, en este mybash eso no está soportado
+           Lo que chdir no asepta es usar ~ para que el path se tome desde el home,
+           implementarlo es bastante complicado, hay una implementación hecha, pero
+           está comentada porque no tiene en cuenta el caso en el que alguien tenga
+           una carpeta cuyo nombre que empiece con ~
         */
-        int ret_code = 0;
+        /* Siempre vale que input_path != NULL ya que todos los argumentos de un
+           scommand son distintos de NULL
+         */
+/*         if(input_path[0] == '~') {
+            char * home_path = getenv("HOME");
+            home_path = str_concat(home_path, input_path);
 
-        if(scommand_length(cmd) > 1u && strcmp(scommand_get_nth(cmd, 1u), "~")){
-            char * path = scommand_get_nth(cmd, 1u);
-            if(strlen(path) > 1u){
-                if(path[0] == '~'){
-                    char * relative_path = path + sizeof(char);
-                    char * full_path = strmerge(getenv("HOME"), relative_path);
-                    ret_code = chdir(full_path);
-                } else {
-                    ret_code = chdir(path);
-                }
-            }
-        } else {
-            ret_code = chdir(getenv("HOME"));
+            ret_code = chdir(home_path);
+
+            free(home_path); home_path = NULL;
         }
-
+        else { */
+            ret_code = chdir(input_path);
+//        }
         if(ret_code != 0){
             /* La función chdir deja un mensaje en algún lado, con perror se puede
                imprimir el último mensaje, por lo cuál, en caso de error se la usa.
@@ -82,6 +84,9 @@ static void builtin_run_cd(const scommand cmd){
     }
     else if(length > 2u){
         printf("mybash: cd: demasiados argumentos\n");
+    }
+    else { // En este caso length == 1u
+        printf("mybash: cd: sin argumentos\n");
     }
 }
 
