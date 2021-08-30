@@ -9,6 +9,7 @@
 
 bool builtin_scommand_is_exit(const scommand cmd){
     assert(cmd != NULL);
+    
     return strcmp(scommand_front(cmd), "exit") == 0;
 }
 

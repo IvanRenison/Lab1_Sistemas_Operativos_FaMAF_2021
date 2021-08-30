@@ -28,7 +28,7 @@ char * strmerge(char *s1, char *s2);
  * USAGE: s1 = str_concat(s1, s2);
  *        s1 = str_concat(s1, "string");
  *
- * Requires: s1 != NULL && s2 != NULL
+ * REQUIRES: s1 != NULL && s2 != NULL
  *
  */
 char * str_concat(char * s1, const char * s2);

@@ -12,7 +12,7 @@
  *   redirigiendo la entrada y salida. puede modificar `apipe' en el proceso
  *   de ejecución.
  *   apipe: pipeline a ejecutar
- * Requires: apipe!=NULL
+ * Requires: apipe != NULL
  */
 void execute_pipeline(pipeline apipe);
 

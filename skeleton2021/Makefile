@@ -9,7 +9,7 @@ export CC CPPFLAGS CFLAGS LDFLAGS
 
 SOURCES=$(shell echo *.c)
 OBJECTS=$(SOURCES:.c=.o)
-PRECOMPILED=lexer.o  # parser.o lexer.o
+PRECOMPILED=parser.o lexer.o
 
 # Agregar objects-arch a los directorios de busqueda de los .o precompilados
 ARCHDIR=objects-$(shell uname -m)

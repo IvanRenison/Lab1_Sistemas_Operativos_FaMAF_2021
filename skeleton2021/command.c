@@ -64,7 +64,7 @@ void scommand_push_back(scommand self, char * argument){
 static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
     assert(xs != NULL && free_func != NULL);
 
-    gpointer head = g_slist_nth_data(xs, 0);
+    gpointer head = g_slist_nth_data(xs, 0u);
 
     GSList* result = g_slist_remove(xs, head);
     // head se vuelve una lista con un solo nodo
@@ -268,7 +268,7 @@ unsigned int pipeline_length(const pipeline self){
 scommand pipeline_front(const pipeline self){
     assert(self != NULL && !pipeline_is_empty(self));
 
-    scommand result = g_slist_nth_data(self->scmds, 0u);//pipeline_get_command(self, 0u);
+    scommand result = g_slist_nth_data(self->scmds, 0u);
 
     assert(result != NULL);
 
