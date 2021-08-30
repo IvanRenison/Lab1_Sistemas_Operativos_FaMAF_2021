@@ -6,6 +6,11 @@
     - [x] Implementar `pipeline_pop_front` en [command.c](skeleton2021/command.c)
     - [x] Los `pop_front` tanto de `pipeline` como de `scommand` andan mal cuando queda un solo elemento
     - [x] Se verifica que `scommand_pop_front` funcione correctamente, se cambia la implementación de la función
+
+- **builtin**:
+    - [ ] Agregar soporte para usar `'~'` para referirse al home en `builtin`
+
+
 - Agregar comprensión en [informe.md](informe.md) de la parte de:
     - [ ] `builtin` [builtin.c](skeleton2021/builtin.c)
     - [ ] `execute` [execute.c](skeleton2021/execute.c)
