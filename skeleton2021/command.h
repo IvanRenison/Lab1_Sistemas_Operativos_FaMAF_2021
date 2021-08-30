@@ -67,7 +67,6 @@ void scommand_push_back(scommand self, char * argument);
  */
 void scommand_pop_front(scommand self);
 
-
 void scommand_set_redir_in(scommand self, char * filename);
 
 /*
@@ -104,13 +103,22 @@ unsigned int scommand_length(const scommand self);
  * Toma la cadena de adelante de la secuencia de cadenas.
  *   self: comando simple al cual tomarle la cadena del frente.
  *   Returns: cadena del frente. La cadena retornada sigue siendo propiedad
- *     del TAD (osea que el llamador no debe modificarla ni liberarla)
+ *     del TAD (ósea que el llamador no debe modificarla ni liberarla)
  *     Si se necesita una cadena propria hay que copiarla
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
 char * scommand_front(const scommand self);
 
+/*
+ * Retorna el n-esimo argumento de self, la cadena retornada
+ * sigue siendo propiedad del TAD
+ * 
+ * Requires: self != NULL && scommand_length(self) < n
+ *
+ * Ensures: result != NULL
+ */
+char * scommand_get_nth(scommand self, unsigned int n);
 
 char * scommand_get_redir_in(const scommand self);
 /*

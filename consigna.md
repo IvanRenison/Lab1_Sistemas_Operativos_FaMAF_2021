@@ -38,5 +38,21 @@ scomand_1 | ... | scommand_n
 scomand_1 && ... && scommand_n
 ```
 - Imprimir un prompt con información relevante, por ejemplo, nombre del host, nombre de usuario y camino relativo.
-- Implementar toda la generalidad para aceptar la gramática de list según la sección SHELLGRAMMAR de man bash. Por ejemplo, se podrá ejecutar ls -l | wc ; ls & ps. Para hacer estohabrá que pensar mejor las estructuras porque pipeline incorpora el indicador de 2do planoquedeberíaestarenlist.
+
+- Implementar toda la generalidad para aceptar la gramática de list según la sección SHELLGRAMMAR de man bash. Por ejemplo, se podrá ejecutar ls -l | wc ; ls & ps. Para hacer esto habrá que pensar mejor las estructuras porque pipeline incorpora el indicador de 2do plano que debería estar en list.
+
 - Cualquier otra mejora que ustedes consideren relevante.
+
+---
+### Extras nuestros
+
+- Modificación del archivo `buidtin.c`
+
+> Hola, en el módulo builtin las funciones que hay, operan con pipelines, sin embargo, son cosas que se aplican a un solo comando, por ejemplo, la función builtin_is_internal está declarada como bool builtin_is_internal(pipeline pipe);, sin embargo, lo que puede o no ser interno es un scommand. Hacer que builtin trabaje sobre pipelines haría que no sea claro el comportamiento de las funciones en algunos casos, y creo que generaría complicaciones para el módulo execute, en donde creo que va a ser necesario usar esas funciones para un solo scommand.
+Entonces, quería preguntar, ¿podemos modificar un poco el módulo builtin (agregar y modificar algunas funciones) para hacer esas cosas? O hay algún buen motivo para no hacerlo?
+
+> En realidad, para lograr una mejor abstracción, lo que puede ser un builtin es el pipeline completo. Si lo modificás como sugerís, estarías "cerrando la puerta" a poder ejecutar pipelines enteros como builtin. Fijate que ahora solo hay dos, el cd y el exit, pero en un bash más real tendrías muchos comandos builtin. Sin embargo, tu punto es super válido, porque tampoco estamos definiendo con detalle qué pasa si tenés un pipeline con más de un comando, y un builtin en el medio, lo cual también es bastante improlijo.
+
+> Para este lab, podés asumir que si el primer comando de un pipeline es un builtin, entonces el pipeline tiene un único comando. O sea, que no vas a recibir cosas como cd lala | ls -l. O, si lo recibís, sólo vas a ejecutar el cd y listo.
+
+> Hola grupo! Si quieren modificar el builtin, me encanta la idea, pero i) haganlo una vez que terminen el execute, sería como "punto estrella", ii) no les prometo que no les robemos el código para el año que viene si queda lindo :P

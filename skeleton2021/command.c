@@ -13,7 +13,6 @@
 /* Estructura correspondiente a un comando simple.
  * Es una 3-upla del tipo ([char*], char* , char*).
  */
-
 struct scommand_s {
     GSList * args;
     char * redir_in;
@@ -75,7 +74,6 @@ static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
     return(result);
 }
 
-
 void scommand_pop_front(scommand self){
 	assert(self != NULL && !scommand_is_empty(self));
 
@@ -114,6 +112,15 @@ char * scommand_front(const scommand self){
     assert(self != NULL && !scommand_is_empty(self));
 
     char * result = g_slist_nth_data(self->args, 0u);
+
+    assert(result != NULL);
+    return result;
+}
+
+char * scommand_get_nth(scommand self, unsigned int n){
+    assert(self != NULL && n < scommand_length(self));
+
+    char * result = g_slist_nth_data(self->args, n);
 
     assert(result != NULL);
     return result;
@@ -187,7 +194,6 @@ static char * append_scommand_to_string(char * chars, const scommand self) {
 /* Estructura correspondiente a un comando pipeline.
  * Es un 2-upla del tipo ([scommand], bool)
  */
-
 struct pipeline_s {
     GSList *scmds;
     bool wait;

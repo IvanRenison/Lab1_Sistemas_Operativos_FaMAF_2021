@@ -7,33 +7,45 @@
 /*
  * Indica si un "exit"
  *
- * REQUIRES: pipe != NULL
- *
+ * REQUIRES: cmd != NULL
  */
-bool builtin_is_exit(pipeline pipe);
+bool builtin_scommand_is_exit(const scommand cmd);
 
 /*
  * Indica si el comando es un "cd"
  *
- * REQUIRES: pipe != NULL
- *
+ * REQUIRES: cmd != NULL
  */
-bool builtin_is_cd(pipeline pipe);
+bool builtin_scommand_is_cd(const scommand cmd);
+
 
 /*
- * Indica si el comando es interno
+ * Indica si un comando es interno
+ *
+ * REQUIRES: cmd != NULL
+ */
+bool builtin_scommand_is_internal(const scommand cmd);
+
+/*
+ * Indica si el pipeline tiene un solo comando y ese comando es interno
  *
  * REQUIRES: pipe != NULL
  *
  */
-bool builtin_is_internal(pipeline pipe);
+bool builtin_scommand_is_single_internal(const pipeline pipe);
 
 /*
  * Ejecuta un comando interno
  *
- * REQUIRES: {builtin_is_internal(pipe)}
- *
+ * REQUIRES: cmd != NULL && builtin_scommand_is_internal(cmd)
  */
-void builtin_exec(pipeline pipe);
+void builtin_scommand_exec(const scommand cmd);
+
+/*
+ * Ejecuta una pipeline con un único comando
+ *
+ * REQUIRES: pipe != NULL && builtin_scommand_is_single_internal(pipe)
+ */
+void builtin_single_pipeline_exec(const pipeline pipe);
 
 #endif

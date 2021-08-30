@@ -5,9 +5,14 @@
 #include <stdio.h> 		/* FILE */
 #include "command.h"	/* pipeline */
 
+struct parser_s {
+    char * strin;
+    FILE * input;
+    bool iseof;  // Si terminó el FILE
+};
+
 /* Tipo opaco, implementación oculta */
 typedef struct parser_s * Parser;
-
 
 /* Constructor de Parser.
  * El input es el archivo de donde se quieren parsear pipelines.
@@ -19,7 +24,6 @@ typedef struct parser_s * Parser;
  */
 Parser parser_new(FILE *input);
 
-
 /* Destructor de Parser.
  * REQUIRES:
  *     parser != NULL
@@ -27,7 +31,6 @@ Parser parser_new(FILE *input);
  *     Devuelve NULL
  */
 Parser parser_destroy(Parser parser);
-
 
 /* Lee todo un pipeline de `parser' hasta llegar a un fin de línea (inclusive)
  * o de archivo.
@@ -43,7 +46,6 @@ Parser parser_destroy(Parser parser);
  *     estructura correspondiente.
  */
 pipeline parse_pipeline(Parser parser);
-
 
 /* Consulta si el parser llegó al final del archivo.
  * REQUIRES:

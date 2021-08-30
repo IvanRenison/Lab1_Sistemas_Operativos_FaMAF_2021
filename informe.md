@@ -17,7 +17,7 @@ make
 ```
 
 ```bash
-gcc test_main.c command.o `pkg-config --cflags --libs glib`
+gcc test_main.c command.o strextra.o `pkg-config --cflags --libs glib`
 ```
 
 ```bash
@@ -30,7 +30,7 @@ make
 ```
 
 ```bash
-gcc test_main.c command.o `pkg-config --cflags --libs glib`
+gcc test_main.c command.o strextra.o `pkg-config --cflags --libs glib`
 ```
 
 ```bash
@@ -73,7 +73,7 @@ valgrind --suppressions=/usr/share/glib-2.0/valgrind/glib.supp --show-reachable=
 
 ## Command
 ### Test
-Al utilizar el `test_main.c` para probar las funciones del TAD, los strings que se utilizen para pasar como argumentos deben ser creados asignando memoria dinámica, ya que en la función `scommand_destroy` se libera la memoria ocupada por los mismos y si se declara el puntero de manera estática el mismo se cargará en el heap y va a causar un error cuando se intente liberar la memoria, se recomienda utilizar directamente las funciones `strdup()` y `strndup()` para la creación de strings.
+Al utilizar el `test_main.c` para probar las funciones del TAD, los strings que se utilicen para pasar como argumentos deben ser creados asignando memoria dinámica, ya que en la función `scommand_destroy` se libera la memoria ocupada por los mismos y si se declara el puntero de manera estática el mismo se cargará en el **heap** y va a causar un **error** cuando se **intente liberar la memoria**, se recomienda utilizar directamente las funciones `strdup()` y `strndup()` para la creación de strings.
 
 Referencia:
 > https://www.geeksforgeeks.org/strdup-strdndup-functions-c/
@@ -81,9 +81,25 @@ Referencia:
 > https://stackoverflow.com/questions/20297524/c-free-invalid-pointer
 
 ## Builtin
+Modificamos el archivo `builtin.h` y `builtin.c` porque:
+1. 
+2. En bash no se puede recibir varios argumentos.
+3.
+4.
+5.
+6.
+7. 
+
+NOTAS:
+- `chdir()` ya reconoce si la llamada es desde home, sistema o el directorio actual por lo que se abstrae esta lógica en esta función.
 
 
 ## Syscall
+`cd ~` desde el home
+
+`cd /` desde el sistema
+
+`cd ./` o `cd ` desde el directorio actual
 
 ## Parser
 

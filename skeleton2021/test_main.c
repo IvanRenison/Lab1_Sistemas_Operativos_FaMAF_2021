@@ -1,42 +1,48 @@
-#include "command.h"
-#include "parser.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
+#include <unistd.h>
 
+#include "builtin.h"
+#include "command.h"
 
 int main(void) {
 
-    /*FILE* test = fopen("test.txt", "r");
-    Parser p = parser_new(test);
+/*     scommand command = scommand_new();
+    scommand_push_back(command, strdup("cd"));
+    scommand_push_back(command, strdup(".."));
 
-    pipeline comando = parse_pipeline(p);
-    char* xs = pipeline_to_string(comando);
-    printf("%s\n", xs);
+    char* primero = scommand_front(command);
+    printf("%s\n", primero);
 
-    free(xs);
-    pipeline_destroy(comando);
-    parser_destroy(p);
+    command = scommand_destroy(command); */
+
+    //pipeline pipe = pipeline_new();
+/*     scommand command = scommand_new();
+    scommand_push_back(command, strdup("cd"));
+    scommand_push_back(command, strdup("~/Desktop")); */
+
+    char* current = malloc(1000);
+    current = getcwd(current, 1000);
+    printf("%s\n", current);
 
 
-    fclose(test);*/
+    printf("CHDIR: %d\n", chdir("~/Desktop"));
 
-    char * arg1 = strdup("exec");
-    char * arg2 = strdup("wc");
-    char * redir_in = strdup("file.in");
-    scommand comando = scommand_new();
-    scommand_push_back(comando, arg1);
-    printf("%d\n", scommand_length(comando));
-    scommand_set_redir_in(comando, redir_in);
-    printf("%s\n", scommand_front(comando));
-    scommand_pop_front(comando);
-    printf("%d\n", scommand_length(comando));
-    scommand_push_back(comando, arg2);
-    char * command = scommand_to_string(comando);
-    printf("%s\n", command);
-    free(command);
-    scommand_destroy(comando);
+    perror("~/Desktop");
 
+/*     char* c = scommand_to_string(command);
+    printf("%s\n", c);
+    free(c); */
+
+
+//    builtin_scommand_exec(command);
+
+    current = getcwd(current, 1000);
+    printf("%s\n", current);
+    free(current);
+
+//    command = scommand_destroy(command);
 
     return(EXIT_SUCCESS);
 }

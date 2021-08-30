@@ -12,3 +12,4 @@
     - [ ] `parser` [parser.c](skeleton2021/parser.h)
     - [ ] `cash` [mybash.c](skeleton2021/mybash.c)
     - [ ] [command.c](skeleton2021/command.c)
+- [ ] Modificar el parser.c
