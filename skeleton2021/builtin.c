@@ -48,7 +48,8 @@ static void builtin_run_cd(const scommand cmd){
         char * path = scommand_get_nth(cmd, 1u);
         /* Si el argumento de chdir comienza con / el path se toma desde equipo
            (ósea como path absoluto) y si empieza con ./ o sin nada se toma dese
-           el directorio actual
+           el directorio actual. También, chdir asepta .. para ir un directorio
+           para arriba.
            
            En bash ademas de poderse usar esos comienzos, se puede usar ~ para
            que el path sea desde el home, en este mybash eso no está soportado
@@ -101,4 +102,6 @@ void builtin_scommand_exec(const scommand cmd){
 void builtin_single_pipeline_exec(const pipeline pipe){
     assert(pipe != NULL && builtin_scommand_is_single_internal(pipe));
 
+    scommand cmd = pipeline_front(pipe);
+    builtin_scommand_exec(cmd);
 }
