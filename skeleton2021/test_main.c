@@ -22,7 +22,7 @@ int main(void) {
     scommand_push_back(command, strdup("cd"));
     scommand_push_back(command, strdup("~/Desktop")); */
 
-    char* current = malloc(1000);
+/*  char* current = malloc(1000);
     current = getcwd(current, 1000);
     printf("%s\n", current);
 
@@ -31,18 +31,35 @@ int main(void) {
 
     perror("~/Desktop");
 
-/*     char* c = scommand_to_string(command);
+    char* c = scommand_to_string(command);
     printf("%s\n", c);
-    free(c); */
+    free(c); 
 
 
-//    builtin_scommand_exec(command);
+    builtin_scommand_exec(command);
 
     current = getcwd(current, 1000);
     printf("%s\n", current);
     free(current);
 
-//    command = scommand_destroy(command);
+    command = scommand_destroy(command);*/
+
+    char* current = malloc(1000);
+    current = getcwd(current, 1000);
+    printf("%s\n", current);
+
+    scommand comando = scommand_new();
+    char * arg1 = strdup("cd");
+    char * arg2 = strdup("~");
+    scommand_push_back(comando, arg1);
+    scommand_push_back(comando, arg2);
+    builtin_scommand_exec(comando);
+
+    current = getcwd(current, 1000);
+    printf("%s\n", current);
+
+    free(current);
+    scommand_destroy(comando);
 
     return(EXIT_SUCCESS);
 }

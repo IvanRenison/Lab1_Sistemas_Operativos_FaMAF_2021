@@ -120,7 +120,6 @@ char * scommand_front(const scommand self);
  */
 char * scommand_get_nth(scommand self, unsigned int n);
 
-char * scommand_get_redir_in(const scommand self);
 /*
  * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
  *   self: comando simple a decidir si está vacío.
@@ -129,6 +128,8 @@ char * scommand_get_redir_in(const scommand self);
  *	o NULL si no está redirigida.
  * Requires: self != NULL
  */
+char * scommand_get_redir_in(const scommand self);
+
 char * scommand_get_redir_out(const scommand self);
 
 /* Pretty printer para hacer debugging/logging.

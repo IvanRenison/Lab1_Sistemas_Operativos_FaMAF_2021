@@ -6,6 +6,7 @@
 
 #include "builtin.h"
 #include "command.h"
+#include "strextra.h"
 
 // exit
 
@@ -44,17 +45,32 @@ static void builtin_run_cd(const scommand cmd){
     assert(cmd != NULL && builtin_scommand_is_cd(cmd));
     
     unsigned int length = scommand_length(cmd);
-    if(length == 2u){
-        char * path = scommand_get_nth(cmd, 1u);
+    if(length == 2u || length == 1u){
         /* Si el argumento de chdir comienza con / el path se toma desde equipo
-           (ósea como path absoluto) y si empieza con ./ o sin nada se toma dese
-           el directorio actual. También, chdir asepta .. para ir un directorio
+           (ósea como path absoluto) y si empieza con ./ o sin nada se toma desde
+           el directorio actual. También, chdir acepta .. para ir un directorio
            para arriba.
            
            En bash ademas de poderse usar esos comienzos, se puede usar ~ para
            que el path sea desde el home, en este mybash eso no está soportado
         */
-        int ret_code = chdir(path);
+        int ret_code = 0;
+
+        if(scommand_length(cmd) > 1u && strcmp(scommand_get_nth(cmd, 1u), "~")){
+            char * path = scommand_get_nth(cmd, 1u);
+            if(strlen(path) > 1u){
+                if(path[0] == '~'){
+                    char * relative_path = path + sizeof(char);
+                    char * full_path = strmerge(getenv("HOME"), relative_path);
+                    ret_code = chdir(full_path);
+                } else {
+                    ret_code = chdir(path);
+                }
+            }
+        } else {
+            ret_code = chdir(getenv("HOME"));
+        }
+
         if(ret_code != 0){
             /* La función chdir deja un mensaje en algún lado, con perror se puede
                imprimir el último mensaje, por lo cuál, en caso de error se la usa.
@@ -67,14 +83,7 @@ static void builtin_run_cd(const scommand cmd){
     else if(length > 2u){
         printf("mybash: cd: demasiados argumentos\n");
     }
-    else{ // En bash en este caso se va al home, pero acá no está soportado
-        printf("mybash: cd: sin argumentos\n");
-    }
 }
-
-
-
-
 
 
 bool builtin_scommand_is_internal(const scommand cmd){
