@@ -5,12 +5,6 @@
 #include <stdio.h> 		/* FILE */
 #include "command.h"	/* pipeline */
 
-struct parser_s {
-    char * strin;
-    FILE * input;
-    bool iseof;  // Si terminó el FILE
-};
-
 /* Tipo opaco, implementación oculta */
 typedef struct parser_s * Parser;
 
