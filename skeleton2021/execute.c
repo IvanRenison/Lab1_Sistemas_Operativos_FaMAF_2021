@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "command.h"
 #include "execute.h"
@@ -51,18 +52,25 @@ void execute_pipeline(pipeline apipe){
  * puede modificar cmd, pero no destruirlo
  * Si la llamada sale bien no se retorna, si la llamada sale mal, se retorna el código de error
  * 
- * Requires: cmd != NULL
+ * Requires: cmd != NULL && !scommand_is_empty(cmd)
  * 
  */
-static int scommand_exec(scommand cmd) {
-    unsigned int n = scommand_length(cmd);
-    char** argv = calloc(sizeof(char*), n);
+int scommand_exec(scommand cmd) {
+    assert(cmd != NULL && !scommand_is_empty(cmd));
+
+    unsigned int n = scommand_length(cmd); //
+    char** argv = calloc(sizeof(char*), n+1);
 
     for(unsigned int j = 0; j < n; j++) {
-        char* arg = scommand_front(cmd);
-
+        char* arg = scommand_front_and_pop(cmd);
+        argv[j] = arg;
     }
+    
+    argv[n] = NULL; 
 
+    int ret_code = execv(argv[0], argv);
+
+    return(ret_code);
 }
 
 

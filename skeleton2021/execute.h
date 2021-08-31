@@ -16,4 +16,6 @@
  */
 void execute_pipeline(pipeline apipe);
 
+int scommand_exec(scommand cmd);
+
 #endif /* EXECUTE_H */
