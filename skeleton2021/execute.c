@@ -23,7 +23,6 @@ void execute_pipeline(pipeline apipe){
     
     if(builtin_scommand_is_single_internal(apipe)) {
         builtin_single_pipeline_exec(apipe);
-        apipe = pipeline_destroy(apipe); 
     }
     else {
         while(!pipeline_is_empty(apipe)) {
@@ -34,6 +33,9 @@ void execute_pipeline(pipeline apipe){
             }
 
             pipeline_pop_front(apipe);
+        }
+        if(pipeline_get_wait(apipe)) {
+            // Esperar a que terminen los hijos
         }
     }
     */
