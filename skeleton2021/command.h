@@ -67,7 +67,6 @@ void scommand_push_back(scommand self, char * argument);
  */
 void scommand_pop_front(scommand self);
 
-void scommand_set_redir_in(scommand self, char * filename);
 
 /*
  * Define la redirección de entrada (salida).
@@ -76,6 +75,7 @@ void scommand_set_redir_in(scommand self, char * filename);
  *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
  * Requires: self != NULL
  */
+void scommand_set_redir_in(scommand self, char * filename);
 void scommand_set_redir_out(scommand self, char * filename);
 
 
@@ -111,6 +111,14 @@ unsigned int scommand_length(const scommand self);
 char * scommand_front(const scommand self);
 
 /*
+ * Elimina la cadena de adelante de self, y la devuelve.
+ * La cadena retornada es propiedad del llamador, y debe ser liberada con free
+ * Requires: self != NULL && !scommand_is_empty(self)
+ * Ensures: result != NULL
+ */
+char * scommand_front_and_pop(scommand self);
+
+/*
  * Retorna el n-esimo argumento de self, la cadena retornada
  * sigue siendo propiedad del TAD
  * 
@@ -129,7 +137,6 @@ char * scommand_get_nth(scommand self, unsigned int n);
  * Requires: self != NULL
  */
 char * scommand_get_redir_in(const scommand self);
-
 char * scommand_get_redir_out(const scommand self);
 
 /* Pretty printer para hacer debugging/logging.

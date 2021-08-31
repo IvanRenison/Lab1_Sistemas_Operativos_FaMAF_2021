@@ -117,6 +117,18 @@ char * scommand_front(const scommand self){
     return result;
 }
 
+char * scommand_front_and_pop(scommand self) {
+    assert(self != NULL && !scommand_is_empty(self));
+
+    char* result = g_slist_nth_data(self->args, 0u);
+
+    self->args = g_slist_remove(self->args, result);
+    // g_slist_remove libera el nodo, pero no el elemento
+
+    assert(result != NULL);
+    return(result);
+}
+
 char * scommand_get_nth(scommand self, unsigned int n){
     assert(self != NULL && n < scommand_length(self));
 
