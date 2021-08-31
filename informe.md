@@ -105,7 +105,7 @@ En el GNU Bash, es lo mismo ejecutar `cd ~` y `cd `, ambas sirven para cambiar a
 La implementación en este bash es similar, también, al igual que en el GNU Bash, en caso de que se cree una carpeta/directorio que tenga archivos adicionales ademas del `~`, por ejemplo `~archivos` no hace falta utilizar las comillas simples para cambiar a ese directorio, es decir se puede hacer `cd ~archivos`.
 También es importante mencionar que en caso de que algun subdirectorio/carpeta se llame `~`, no es necesario utilizar las comillas simples al referirse al mismo, ya que solo se analiza el directorio principal para ver si es una llamada al directorio principal, o si es una llamada a un directorio llamado `~`.
 Ejemplo: path = ~/Archivos/~
-Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`
+Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`, en el GNU Bash cualquiera de los dos funciona, pero en nuestra implementación sólo se debe colocar `'~'` en el directorio si se refiere a un directorio/carpeta llamado `~`.
 
 ## Parser
 
