@@ -17,4 +17,25 @@ void execute_pipeline(pipeline apipe){
         // Recorrer los comandos y ejecutarlos
         // Checkear si es necesario esperar un comando
     }
+    
+    /*
+    Estructura:
+    
+    if(builtin_scommand_is_single_internal(apipe)) {
+        builtin_single_pipeline_exec(apipe);
+        apipe = pipeline_destroy(apipe); 
+    }
+    else {
+        while(!pipeline_is_empty(apipe)) {
+            scommand cmd = pipeline_front(apipe);
+
+            if(!builtin_scommand_is_internal(cmd)) {
+                // frckear y crear el proseso hijo
+            }
+
+            pipeline_pop_front(apipe);
+        }
+    }
+    */
+    
 }
