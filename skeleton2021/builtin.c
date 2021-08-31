@@ -72,7 +72,7 @@ static void builtin_run_cd(const scommand cmd){
                 full_path = strmerge(getenv("HOME"), relative_path);
 
                 ret_code = chdir(full_path);
-            } else if(input_path[0] == 39 && input_path[1] == '~' && input_path[2] == 39 &&
+            } else if(input_path[0] == '\'' && input_path[1] == '~' && input_path[2] == '\'' &&
             input_path[3] == '/'){
                 relative_path = &input_path[3];
                 full_path = strmerge("~", relative_path);
