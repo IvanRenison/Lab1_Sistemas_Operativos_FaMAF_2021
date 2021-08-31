@@ -69,7 +69,7 @@ static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
     GSList* result = g_slist_remove(xs, head);
     // head se vuelve una lista con un solo nodo
 
-    free(head);
+    free_func(head);
 
     return(result);
 }
