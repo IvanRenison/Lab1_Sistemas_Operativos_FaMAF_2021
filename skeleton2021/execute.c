@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "command.h"
 #include "execute.h"
@@ -41,3 +42,30 @@ void execute_pipeline(pipeline apipe){
     */
     
 }
+
+
+
+
+
+/* Ejecuta un comando en el mismo proseso, es decir sin hacer fork
+ * puede modificar cmd, pero no destruirlo
+ * Si la llamada sale bien no se retorna, si la llamada sale mal, se retorna el código de error
+ * 
+ * Requires: cmd != NULL
+ * 
+ */
+static int scommand_exec(scommand cmd) {
+    unsigned int n = scommand_length(cmd);
+    char** argv = calloc(sizeof(char*), n);
+
+    for(unsigned int j = 0; j < n; j++) {
+        char* arg = scommand_front(cmd);
+
+    }
+
+}
+
+
+
+
+
