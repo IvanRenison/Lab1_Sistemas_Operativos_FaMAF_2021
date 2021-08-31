@@ -105,6 +105,8 @@ static void builtin_run_cd(const scommand cmd){
 }
 
 
+// Chequeo
+
 bool builtin_scommand_is_internal(const scommand cmd){
     assert(cmd != NULL);
     return builtin_scommand_is_exit(cmd) || builtin_scommand_is_cd(cmd);
@@ -117,12 +119,15 @@ bool builtin_scommand_is_single_internal(const pipeline pipe){
         builtin_scommand_is_internal(pipeline_front(pipe));
 }
 
+
+// Ejecución
+
 void builtin_scommand_exec(const scommand cmd){
     assert(cmd != NULL && builtin_scommand_is_internal(cmd));
     if(builtin_scommand_is_cd(cmd)){
         builtin_run_cd(cmd);
     }
-    else{
+    else{ // builtin_scommand_is_exit(cmd)
         builtin_run_exit(cmd);
     }
 }
