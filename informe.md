@@ -93,13 +93,19 @@ Modificamos el archivo `builtin.h` y `builtin.c` porque:
 NOTAS:
 - `chdir()` ya reconoce si la llamada es desde home, sistema o el directorio actual por lo que se abstrae esta lógica en esta función.
 
-
 ## Syscall
 `cd ~` desde el home
 
 `cd /` desde el sistema
 
 `cd ./` o `cd ` desde el directorio actual
+
+### Sobre el funcionamiento de cd en el parser y su funcionamiento en Bash
+En el GNU Bash, es lo mismo ejecutar `cd ~` y `cd `, ambas sirven para cambiar al directorio principal, en el caso de que se cree una carpeta o directorio llamado `~` al ejecutarse `cd ~` no se cambia a la carpeta/directorio creado, se cambia al directorio principal, en caso de querer referirse a una carpeta/directorio llamado `~` se debe ejecutar `cd '~'`, de igual forma para acceder a alguna carpeta o subdirectorio en el mismo, sebe ejecutar `cd '~'/archivos` por ejemplo, en caso de que tal carpeta se llame "archivos".
+La implementación en este bash es similar, también, al igual que en el GNU Bash, en caso de que se cree una carpeta/directorio que tenga archivos adicionales ademas del `~`, por ejemplo `~archivos` no hace falta utilizar las comillas simples para cambiar a ese directorio, es decir se puede hacer `cd ~archivos`.
+También es importante mencionar que en caso de que algun subdirectorio/carpeta se llame `~`, no es necesario utilizar las comillas simples al referirse al mismo, ya que solo se analiza el directorio principal para ver si es una llamada al directorio principal, o si es una llamada a un directorio llamado `~`.
+Ejemplo: path = ~/Archivos/~
+Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`
 
 ## Parser
 

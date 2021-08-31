@@ -45,34 +45,51 @@ static void builtin_run_cd(const scommand cmd){
     assert(cmd != NULL && builtin_scommand_is_cd(cmd));
     
     unsigned int length = scommand_length(cmd);
-    if(length == 2u){
-        char * input_path = scommand_get_nth(cmd, 1u);
+    if(length <= 2u){
+
+        char * input_path = NULL;
+        unsigned int path_length = 0u;
+        if(length > 1u){
+            input_path = scommand_get_nth(cmd, 1u);
+            path_length = strlen(input_path);
+        } 
         int ret_code = 0;
 
         /* Si el argumento de chdir comienza con / el path se toma desde equipo
            (ósea como path absoluto) y si empieza con ./ o sin nada se toma desde
            el directorio actual. También, chdir acepta .. para ir un directorio
            para arriba.
-           
-           Lo que chdir no asepta es usar ~ para que el path se tome desde el home,
-           implementarlo es bastante complicado, hay una implementación hecha, pero
-           está comentada porque no tiene en cuenta el caso en el que alguien tenga
-           una carpeta cuyo nombre que empiece con ~
         */
-        /* Siempre vale que input_path != NULL ya que todos los argumentos de un
-           scommand son distintos de NULL
-         */
-/*         if(input_path[0] == '~') {
-            char * home_path = getenv("HOME");
-            home_path = str_concat(home_path, input_path);
 
-            ret_code = chdir(home_path);
+        if(path_length > 1u){
+            char * relative_path = NULL;
+            char * full_path = NULL;
+            if(input_path[0] == '~' && input_path[1] == '/'){
+                /* Caso en el que el ~ es seguido por un /, por ejemplo ~/Documentos, esto
+                se considera como un directorio relativo al directorio principal.
+                */
+                relative_path = &input_path[1];
+                full_path = strmerge(getenv("HOME"), relative_path);
 
-            free(home_path); home_path = NULL;
+                ret_code = chdir(full_path);
+            } else if(input_path[0] == 39 && input_path[1] == '~' && input_path[2] == 39 &&
+            input_path[3] == '/'){
+                relative_path = &input_path[3];
+                full_path = strmerge("~", relative_path);
+                ret_code = chdir(full_path);
+            } else {
+                /* Maneja cualquier caso en el que no se encuentre un ~ o '~' antes de /
+                */
+                ret_code = chdir(input_path);
+            }
+            free(full_path); full_path = NULL;
+        } else { 
+            if(input_path == NULL || input_path[0] == '~'){
+                ret_code = chdir(getenv("HOME"));
+            } else {
+                ret_code = chdir(input_path);
+            }
         }
-        else { */
-            ret_code = chdir(input_path);
-//        }
         if(ret_code != 0){
             /* La función chdir deja un mensaje en algún lado, con perror se puede
                imprimir el último mensaje, por lo cuál, en caso de error se la usa.
@@ -82,12 +99,9 @@ static void builtin_run_cd(const scommand cmd){
             perror("mybash: cd: ");
         }
     }
-    else if(length > 2u){
+    else {
         printf("mybash: cd: demasiados argumentos\n");
-    }
-    else { // En este caso length == 1u
-        printf("mybash: cd: sin argumentos\n");
-    }
+    } 
 }
 
 
