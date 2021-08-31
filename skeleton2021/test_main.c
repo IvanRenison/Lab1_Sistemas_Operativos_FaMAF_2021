@@ -33,7 +33,7 @@ int main(void) {
     //Prueba de cd 
     scommand comando = scommand_new();
     char * cm = strdup("cd");
-    char * dir = strdup("''~''/a");
+    char * dir = strdup("..");
     scommand_push_back(comando, cm);
     scommand_push_back(comando, dir);
 
@@ -48,6 +48,8 @@ int main(void) {
 
     free(current);
     scommand_destroy(comando);
+
+
 
     return(EXIT_SUCCESS);
 }

@@ -54,6 +54,7 @@ static void builtin_run_cd(const scommand cmd){
             path_length = strlen(input_path);
         } 
         int ret_code = 0;
+        char * home_path = getenv("HOME");
 
         /* Si el argumento de chdir comienza con / el path se toma desde equipo
            (ósea como path absoluto) y si empieza con ./ o sin nada se toma desde
@@ -64,19 +65,21 @@ static void builtin_run_cd(const scommand cmd){
         if(path_length > 1u){
             char * relative_path = NULL;
             char * full_path = NULL;
-            if(input_path[0] == '~' && input_path[1] == '/'){
+            if(input_path[0] == '~' && input_path[1] == '/' && home_path != NULL){
                 /* Caso en el que el ~ es seguido por un /, por ejemplo ~/Documentos, esto
                 se considera como un directorio relativo al directorio principal.
                 */
                 relative_path = &input_path[1];
-                full_path = strmerge(getenv("HOME"), relative_path);
+                full_path = strmerge(home_path, relative_path);
 
                 ret_code = chdir(full_path);
-            } else if(input_path[0] == '\'' && input_path[1] == '~' && input_path[2] == '\'' &&
-            input_path[3] == '/'){
+            } else if(input_path[0] == '\'' && input_path[1] == '~' && input_path[2] == '\''){
                 relative_path = &input_path[3];
                 full_path = strmerge("~", relative_path);
                 ret_code = chdir(full_path);
+                if(ret_code != 0){
+                    ret_code = chdir(input_path);
+                }
             } else {
                 /* Maneja cualquier caso en el que no se encuentre un ~ o '~' antes de /
                 */
@@ -84,8 +87,12 @@ static void builtin_run_cd(const scommand cmd){
             }
             free(full_path); full_path = NULL;
         } else { 
-            if(input_path == NULL || input_path[0] == '~'){
-                ret_code = chdir(getenv("HOME"));
+            if(input_path == NULL || input_path[0] == '~' || strcmp(input_path, "") == 0){
+                if(home_path == NULL){
+                     ret_code = chdir("~");
+                } else {
+                    ret_code = chdir(home_path);
+                }
             } else {
                 ret_code = chdir(input_path);
             }
