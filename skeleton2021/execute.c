@@ -59,7 +59,7 @@ int scommand_exec(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
     char** argv = scommand_to_argv(cmd);
-
+    // argv != NULL  por poscondición de scommand_to_argv
     int ret_code = execvp(argv[0], argv);
 
     return(ret_code);
