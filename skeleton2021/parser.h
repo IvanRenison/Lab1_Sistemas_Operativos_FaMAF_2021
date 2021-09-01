@@ -1,12 +1,13 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdbool.h>	/* bool */
-#include <stdio.h> 		/* FILE */
-#include "command.h"	/* pipeline */
+#include <stdbool.h> /* bool */
+#include <stdio.h>   /* FILE */
+
+#include "command.h" /* pipeline */
 
 /* Tipo opaco, implementación oculta */
-typedef struct parser_s * Parser;
+typedef struct parser_s* Parser;
 
 /* Constructor de Parser.
  * El input es el archivo de donde se quieren parsear pipelines.
@@ -16,7 +17,7 @@ typedef struct parser_s * Parser;
  *     Devuelve un Parser para el archivo
  *     o NULL en caso de haber un error de inicialización
  */
-Parser parser_new(FILE *input);
+Parser parser_new(FILE* input);
 
 /* Destructor de Parser.
  * REQUIRES:

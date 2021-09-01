@@ -1,12 +1,11 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
+#include "builtin.h"
 #include "command.h"
 #include "execute.h"
 #include "parser.h"
-#include "builtin.h"
 #include "prompt.h"
-
 
 /* int main(int argc, char *argv[]){
     Parser parser;
@@ -17,7 +16,8 @@
     while (!quit) {
         show_prompt();
         pipe = parse_pipeline(parser);
-        quit = parser_at_eof(parser); // Chequeo si hay que salir luego de ejecutar el comando
+        quit = parser_at_eof(parser); // Chequeo si hay que salir luego de
+ejecutar el comando
 
         if (pipe != NULL) {
             quit = quit || builtin_is_exit(pipe);

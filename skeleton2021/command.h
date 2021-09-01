@@ -9,7 +9,6 @@
 
 #include <stdbool.h> /* para tener bool */
 
-
 /* scommand: comando simple.
  * Ejemplo: ls -l ej1.c > out < in
  * Se presenta como una secuencia de cadenas donde la primera se denomina
@@ -29,7 +28,7 @@
  * La interfaz es esencialmente la de una cola. A eso se le
  * agrega dos accesores/modificadores para redirección de entrada y salida.
  */
-typedef struct scommand_s * scommand;
+typedef struct scommand_s* scommand;
 
 /*
  * Nuevo `scommand', sin comandos o argumentos y los redirectores vacíos
@@ -48,7 +47,6 @@ scommand scommand_new(void);
  */
 scommand scommand_destroy(scommand self);
 
-
 /* Modificadores */
 
 /*
@@ -58,7 +56,7 @@ scommand scommand_destroy(scommand self);
  * Requires: self != NULL && argument != NULL
  * Ensures: !scommand_is_empty()
  */
-void scommand_push_back(scommand self, char * argument);
+void scommand_push_back(scommand self, char* argument);
 
 /*
  * Quita la cadena de adelante de la secuencia de cadenas.
@@ -67,7 +65,6 @@ void scommand_push_back(scommand self, char * argument);
  */
 void scommand_pop_front(scommand self);
 
-
 /*
  * Define la redirección de entrada (salida).
  *   self: comando simple al cual establecer la redirección de entrada (salida).
@@ -75,9 +72,8 @@ void scommand_pop_front(scommand self);
  *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
  * Requires: self != NULL
  */
-void scommand_set_redir_in(scommand self, char * filename);
-void scommand_set_redir_out(scommand self, char * filename);
-
+void scommand_set_redir_in(scommand self, char* filename);
+void scommand_set_redir_out(scommand self, char* filename);
 
 /* Proyectores */
 
@@ -108,7 +104,7 @@ unsigned int scommand_length(const scommand self);
  * Requires: self != NULL && !scommand_is_empty(self)
  * Ensures: result != NULL
  */
-char * scommand_front(const scommand self);
+char* scommand_front(const scommand self);
 
 /*
  * Elimina la cadena de adelante de self, y la devuelve.
@@ -116,17 +112,17 @@ char * scommand_front(const scommand self);
  * Requires: self != NULL && !scommand_is_empty(self)
  * Ensures: result != NULL
  */
-char * scommand_front_and_pop(scommand self);
+char* scommand_front_and_pop(scommand self);
 
 /*
  * Retorna el n-esimo argumento de self, la cadena retornada
  * sigue siendo propiedad del TAD
- * 
+ *
  * Requires: self != NULL && scommand_length(self) < n
  *
  * Ensures: result != NULL
  */
-char * scommand_get_nth(scommand self, unsigned int n);
+char* scommand_get_nth(scommand self, unsigned int n);
 
 /*
  * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
@@ -136,23 +132,23 @@ char * scommand_get_nth(scommand self, unsigned int n);
  *	o NULL si no está redirigida.
  * Requires: self != NULL
  */
-char * scommand_get_redir_in(const scommand self);
-char * scommand_get_redir_out(const scommand self);
+char* scommand_get_redir_in(const scommand self);
+char* scommand_get_redir_out(const scommand self);
 
 /*
- * Convierte todos los argumentos de self en un arreglo de arreglos, que termina en NULL
- * los argumentos son eliminados de self, de forma que self queda vaciá
+ * Convierte todos los argumentos de self en un arreglo de arreglos, que termina
+ * en NULL. Los argumentos son eliminados de self, de forma que self queda vacía
  * El arreglo devuelto, y todos los arreglos que contiene son propiedad del
  * llamador
- * 
+ *
  * Requires: self != NULL
- * 
+ *
  * Si n = scommand_length(self) (del self del comienzo):
  * Ensures: self != NULL && scommand_is_empty(self)
  *          && argv != NULL && ⟨∀j ∈ 0..n-1 : argv[j] != NULL⟩
  *          && argv[n] == NULL
  */
-char ** scommand_to_argv(scommand self);
+char** scommand_to_argv(scommand self);
 
 /* Pretty printer para hacer debugging/logging.
  * Genera una representación del comando simple en un string (aka "serializar")
@@ -162,12 +158,10 @@ char ** scommand_to_argv(scommand self);
  *     resultante.
  * Requires: self != NULL
  * Ensures: scommand_is_empty(self) ||
- *   scommand_get_redir_in(self) == NULL || scommand_get_redir_out(self) == NULL ||
- *   strlen(result ) > 0
+ *   scommand_get_redir_in(self) == NULL || scommand_get_redir_out(self) == NULL
+ * || strlen(result ) > 0
  */
-char * scommand_to_string(const scommand self);
-
-
+char* scommand_to_string(const scommand self);
 
 /*
  * pipeline: tubería de comandos.
@@ -187,7 +181,7 @@ char * scommand_to_string(const scommand self);
  *           ------------------------------
  */
 
-typedef struct pipeline_s * pipeline;
+typedef struct pipeline_s* pipeline;
 
 /*
  * Nuevo `pipeline', sin comandos simples y establecido para que espere.
@@ -205,7 +199,6 @@ pipeline pipeline_new(void);
  * Ensures: result == NULL
  */
 pipeline pipeline_destroy(pipeline self);
-
 
 /* Modificadores */
 
@@ -232,7 +225,6 @@ void pipeline_pop_front(pipeline self);
  * Requires: self != NULL
  */
 void pipeline_set_wait(pipeline self, const bool w);
-
 
 /* Proyectores */
 
@@ -280,9 +272,9 @@ bool pipeline_get_wait(const pipeline self);
  *   Returns: una cadena con la representación del pipeline similar
  *     a lo que se escribe en un shell. Debe destruirla el llamador.
  * Requires: self != NULL
- * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result) > 0
+ * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result)
+ * > 0
  */
-char * pipeline_to_string(const pipeline self);
-
+char* pipeline_to_string(const pipeline self);
 
 #endif /* COMMAND_H */

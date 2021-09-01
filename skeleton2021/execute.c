@@ -6,12 +6,12 @@
 #include "command.h"
 #include "execute.h"
 
-void execute_pipeline(pipeline apipe){
+void execute_pipeline(pipeline apipe) {
     assert(apipe != NULL);
     // Checkear el tamaño de la pipe
     unsigned int N = pipeline_length(apipe);
     // Un solo comando
-    if(N == 1){
+    if (N == 1) {
         // Ejecutar el comando
         printf("Ejecutar el comando...\n");
     } // Varios comandos
@@ -19,10 +19,10 @@ void execute_pipeline(pipeline apipe){
         // Recorrer los comandos y ejecutarlos
         // Checkear si es necesario esperar un comando
     }
-    
+
     /*
     Estructura:
-    
+
     if(builtin_scommand_is_single_internal(apipe)) {
         builtin_single_pipeline_exec(apipe);
     }
@@ -41,19 +41,15 @@ void execute_pipeline(pipeline apipe){
         }
     }
     */
-    
 }
-
-
-
-
 
 /* Ejecuta un comando en el mismo proseso, es decir sin hacer fork
  * puede modificar cmd, pero no destruirlo
- * Si la llamada sale bien no se retorna, si la llamada sale mal, se retorna el código de error
- * 
+ * Si la llamada sale bien no se retorna, si la llamada sale mal, se retorna el
+ * código de error
+ *
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
- * 
+ *
  */
 int scommand_exec(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
@@ -62,10 +58,5 @@ int scommand_exec(scommand cmd) {
     // argv != NULL  por poscondición de scommand_to_argv
     int ret_code = execvp(argv[0], argv);
 
-    return(ret_code);
+    return (ret_code);
 }
-
-
-
-
-
