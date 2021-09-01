@@ -58,17 +58,9 @@ void execute_pipeline(pipeline apipe){
 int scommand_exec(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
-    unsigned int n = scommand_length(cmd); //
-    char** argv = calloc(sizeof(char*), n+1);
+    char** argv = scommand_to_argv(cmd);
 
-    for(unsigned int j = 0; j < n; j++) {
-        char* arg = scommand_front_and_pop(cmd);
-        argv[j] = arg;
-    }
-    
-    argv[n] = NULL; 
-
-    int ret_code = execv(argv[0], argv);
+    int ret_code = execvp(argv[0], argv);
 
     return(ret_code);
 }
