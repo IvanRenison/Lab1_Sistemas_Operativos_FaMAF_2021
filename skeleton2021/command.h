@@ -139,6 +139,21 @@ char * scommand_get_nth(scommand self, unsigned int n);
 char * scommand_get_redir_in(const scommand self);
 char * scommand_get_redir_out(const scommand self);
 
+/*
+ * Convierte todos los argumentos de self en un arreglo de arreglos, que termina en NULL
+ * los argumentos son eliminados de self, de forma que self queda vaciá
+ * El arreglo devuelto, y todos los arreglos que contiene son propiedad del
+ * llamador
+ * 
+ * Requires: self != NULL
+ * 
+ * Si n = scommand_length(self) (del self del comienzo):
+ * Ensures: self != NULL && scommand_is_empty(self)
+ *          && argv != NULL && ⟨∀j ∈ 0..n-1 : argv[j] != NULL⟩
+ *          && argv[n] == NULL
+ */
+char ** scommand_to_argv(scommand self);
+
 /* Pretty printer para hacer debugging/logging.
  * Genera una representación del comando simple en un string (aka "serializar")
  *   self: comando simple a convertir.

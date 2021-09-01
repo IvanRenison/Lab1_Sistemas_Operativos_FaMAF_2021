@@ -150,6 +150,26 @@ char * scommand_get_redir_out(const scommand self){
     return (self->redir_out);
 }
 
+char** scommand_to_argv(scommand self) {
+    assert(self != NULL);
+
+    unsigned int n = scommand_length(self);
+    char** argv = calloc(sizeof(char*), n+1);
+
+    for(unsigned int j = 0; j < n; j++) {
+        char* arg = scommand_front_and_pop(self);
+        argv[j] = arg;
+
+        assert(argv[j] != NULL);
+        // Este assert verifica la parte de ⟨∀j ∈ 0..n-1 : argv[i] != NULL⟩
+    }
+    argv[n] = NULL;
+
+    assert(self != NULL && scommand_is_empty(self)
+            && argv != NULL && argv[n] == NULL);
+    return(argv);
+}
+
 char * scommand_to_string(const scommand self){
     assert(self != NULL);
 
