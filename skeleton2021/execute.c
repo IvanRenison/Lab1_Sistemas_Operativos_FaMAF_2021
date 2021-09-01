@@ -58,5 +58,13 @@ int scommand_exec(scommand cmd) {
     // argv != NULL  por poscondición de scommand_to_argv
     int ret_code = execvp(argv[0], argv);
 
+    // Si execvp falla (y por ende retorna) se libera la memoaria
+    unsigned int j = 0u;
+    while (argv[j] != NULL) {
+        free(argv[j]);
+        j++;
+    }
+    free(argv);
+
     return (ret_code);
 }
