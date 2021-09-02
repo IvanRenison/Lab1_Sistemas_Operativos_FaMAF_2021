@@ -6,9 +6,11 @@ LDFLAGS+= `pkg-config --libs check`
 TARGETS=runner runner-command leaktest
 SOURCES=$(shell echo *.c)
 
+ARCHDIR=objects-$(shell uname -m)
+
 # Modulos que ya se compilaron
 COMMON_OBJECTS=../command.o ../strextra.o
-PARSER_OBJECTS=../parser.o ../lexer.o
+PARSER_OBJECTS=../$(ARCHDIR)/parser.o ../$(ARCHDIR)/lexer.o
 
 # Al modulo ejecutor lo recompilamos en este directorio usando mocks
 MOCK_OBJECTS=builtin.o execute.o syscall_mock.o
