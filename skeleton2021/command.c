@@ -7,6 +7,25 @@
 #include "command.h"
 #include "strextra.h"
 
+/********** Funciones auxiliares **********/
+
+/* Elimina el primer elemento de una lista no vacía, destrullendolo con
+ * free_func Requires: xs != NULL && free_func != NULL
+ */
+static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
+    assert(xs != NULL && free_func != NULL);
+
+    gpointer head = g_slist_nth_data(xs, 0u);
+
+    GSList* result = g_slist_remove(xs, head);
+    // head se vuelve una lista con un solo nodo
+
+    free_func(head);
+
+    return (result);
+}
+
+
 /********** COMANDO SIMPLE **********/
 
 /* Estructura correspondiente a un comando simple.
@@ -56,22 +75,6 @@ void scommand_push_back(scommand self, char* argument) {
     self->args = g_slist_append(self->args, argument);
 
     assert(!scommand_is_empty(self));
-}
-
-/* Elimina el primer elemento de una lista no vacía, destrullendolo con
- * free_func Requires: xs != NULL && free_func != NULL
- */
-static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
-    assert(xs != NULL && free_func != NULL);
-
-    gpointer head = g_slist_nth_data(xs, 0u);
-
-    GSList* result = g_slist_remove(xs, head);
-    // head se vuelve una lista con un solo nodo
-
-    free_func(head);
-
-    return (result);
 }
 
 void scommand_pop_front(scommand self) {
@@ -216,6 +219,7 @@ static char* append_scommand_to_string(char* chars, const scommand self) {
 
     return (chars);
 }
+
 
 /********** COMANDO PIPELINE **********/
 
