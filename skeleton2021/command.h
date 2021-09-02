@@ -163,6 +163,7 @@ char** scommand_to_argv(scommand self);
  */
 char* scommand_to_string(const scommand self);
 
+
 /*
  * pipeline: tubería de comandos.
  * Ejemplo: ls -l *.c > out < in  |  wc  |  grep -i glibc  &
@@ -272,8 +273,7 @@ bool pipeline_get_wait(const pipeline self);
  *   Returns: una cadena con la representación del pipeline similar
  *     a lo que se escribe en un shell. Debe destruirla el llamador.
  * Requires: self != NULL
- * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result)
- * > 0
+ * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result) > 0
  */
 char* pipeline_to_string(const pipeline self);
 

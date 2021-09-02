@@ -243,7 +243,7 @@ pipeline pipeline_new(void) {
 
 /* g_slist_free_full necesita una función que devuelva void
  * para liberar una lista de scommand se puede usar esta función
- */ // Se debe poder hacer sin esta función
+ */
 static void void_scommand_destroy(void* self) {
     scommand self2 = self;
     scommand_destroy(self2);
