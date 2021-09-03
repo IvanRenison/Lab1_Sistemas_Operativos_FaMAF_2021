@@ -46,11 +46,13 @@ void execute_pipeline(pipeline apipe) {
 
 /* Pone, si está seeteado, el archivo de redireción de entrada en el stdin,
  * si no está seeteado no hace nada
+ * Returns: 0 si la operación fue exitosa
+ *          1 si la operación falló
  *
  * Requires: cmd != NULL
  *
  */
-/* static int change_file_descriptor_in(scommand cmd) {
+static int change_file_descriptor_in(scommand cmd) {
     assert(cmd != NULL);
 
     char* redir_in = scommand_get_redir_in(cmd);
@@ -76,16 +78,18 @@ void execute_pipeline(pipeline apipe) {
         }
     }
     return (0);
-} */
+}
 
 /* Pone, si está seeteado, el archivo de redireción de salida en el stdout,
  * si el archivo en existe lo crea
  * Si la redireción de salida no está seeteada no hace nada
- *
+ * Returns: 0 si la operación fue exitosa
+ *          1 si la operación falló
+ * 
  * Requires: cmd != NULL
  *
  */
-/* static int change_file_descriptor_out(scommand cmd) {
+static int change_file_descriptor_out(scommand cmd) {
     assert(cmd != NULL);
 
     char* redir_out = scommand_get_redir_out(cmd);
@@ -93,7 +97,7 @@ void execute_pipeline(pipeline apipe) {
     // devuelve NULL
     if (redir_out != NULL) {
 
-        / *   open como segundo parametro toma flags, en este caso tiene los
+        /*   open como segundo parametro toma flags, en este caso tiene los
            flags O_WRONLY que hace que el archivo se abra en solo escritura, y
            O_CREAT que hace que si el archivo no existe, se cree. En el caso de
            estar seeteado O_CREAT, open toma un tercer parametro de flags de
@@ -101,7 +105,7 @@ void execute_pipeline(pipeline apipe) {
                S_IRUSR: user has read permission
                S_IWUSR: user has write permission
              No sabemos con exactitud que pasa si se pone el O_CREAT pero no se
-           pasa un tercer parametro * /
+           pasa un tercer parametro */
         
         int file_redir_out =
             open(redir_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
@@ -124,18 +128,33 @@ void execute_pipeline(pipeline apipe) {
         }
     }
     return (0);
-} */
+}
 
-/* Ejecuta un comando en el mismo proseso, es decir sin hacer fork
- * puede modificar cmd, pero no destruirlo
- * Si la llamada sale bien no se retorna, si la llamada sale mal, se retorna el
- * código de error
+/* Ejecuta un comando en el mismo proseso, es decir sin hacer fork,
+ * redirigendo el srdin y el stdout si están seeteados
+ * Puede modificar cmd, pero no destruirlo
+ * Si la llamada sale bien no se retorna, si la llamada sale mal, si hay algún
+ * problema con la redireción de entrada o de salida se retorna -1, y si la llamada
+ * al programa falla se retorna el código de error
+ * En caso de fallar la llamada al programa, los descriptores de archivo quedan cambiados
  *
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  *
  */
 int scommand_exec(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
+
+    // Se cambia stdin por el archivo de redireción de entrada, si es que está seeteado
+    int exit_redir_in = change_file_descriptor_in(cmd);
+    if (exit_redir_in != 0) {
+        return (-1);
+    }
+
+    // Se cambia stdout por el archivo de redireción de salida, si es que está seeteado
+    int exit_redir_out = change_file_descriptor_out(cmd);
+    if (exit_redir_out != 0) {
+        return (-1);
+    }
 
     char** argv = scommand_to_argv(cmd);
     // argv != NULL  por poscondición de scommand_to_argv
@@ -147,10 +166,10 @@ int scommand_exec(scommand cmd) {
 
     unsigned int j = 0u;
     while (argv[j] != NULL) {
-        free(argv[j]);
+        free(argv[j]); argv[j] = NULL;
         j++;
     }
-    free(argv);
+    free(argv); argv = NULL;
 
     return (ret_code);
 }
