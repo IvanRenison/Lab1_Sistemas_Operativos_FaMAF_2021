@@ -21,7 +21,7 @@ char* str_concat(char* s1, const char* s2) {
     size_t s1_len = strlen(s1);
     size_t s2_len = strlen(s2);
 
-    s1 = realloc(s1, s1_len + s2_len + sizeof('\0'));
+    s1 = realloc(s1, s1_len + s2_len + sizeof(char)); // El + sizeof(char) es para el \0
 
     s1 = strcat(s1, s2);
 
