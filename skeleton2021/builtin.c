@@ -108,7 +108,7 @@ static void builtin_run_cd(const scommand cmd){
     }
     else {
         printf("mybash: cd: demasiados argumentos\n");
-    } 
+    }
 }
 
 

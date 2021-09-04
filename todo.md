@@ -10,7 +10,10 @@
 - **builtin**:
     - [ ] Agregar soporte para usar `'~'` para referirse al home en `builtin` (teniendo en cuenta el caso de que haya una carpeta cuyo nombre empiece con `~`).
     En bash en el caso de que hay una carpeta cuyo nombre empieza con `~` y tiene mas letras, se puede entrar a la carpeta con `cd ~nombreDeLaCarpeta` o con `cd \~nombreDeLaCarpeta` y en caso de que la carpeta se llame `~` solo, se puede entrar con `cd \~`
+    - [ ] Explicar `change_file_descriptor_in` y `change_file_descriptor_out`.
 
+- **prompt**:
+    - [ ] Realizar el punto estrella.
 
 - Agregar comprensión en [informe.md](informe.md) de la parte de:
     - [ ] `builtin` [builtin.c](skeleton2021/builtin.c)

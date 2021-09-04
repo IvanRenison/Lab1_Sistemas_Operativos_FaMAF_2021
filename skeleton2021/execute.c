@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "builtin.h"
 #include "command.h"
 #include "execute.h"
 
@@ -15,6 +16,17 @@ void execute_pipeline(pipeline apipe) {
     if (N == 1) {
         // Ejecutar el comando
         printf("Ejecutar el comando...\n");
+        if(builtin_scommand_is_single_internal(apipe)){
+            builtin_single_pipeline_exec(apipe);
+        } else {
+            // Proceso hijo
+            int pid = fork();
+            if(pid < 0){
+                perror("fork");
+            } else if (pid == 0){
+                scommand_exec(pipeline_front(apipe));
+            }
+        }
     } // Varios comandos
     else {
         // Recorrer los comandos y ejecutarlos
@@ -76,6 +88,14 @@ static int change_file_descriptor_in(scommand cmd) {
             perror("");
             return (-1);
         }
+
+        int res_close = close(file_redir_in);
+        if (res_close == -1) {
+            // No debería fallar, PERO si falla...
+            perror("");
+            return (-1);
+        }
+
     }
     return (0);
 }
@@ -85,7 +105,7 @@ static int change_file_descriptor_in(scommand cmd) {
  * Si la redireción de salida no está seeteada no hace nada
  * Returns: 0 si la operación fue exitosa
  *          1 si la operación falló
- * 
+ *
  * Requires: cmd != NULL
  *
  */
@@ -93,8 +113,7 @@ static int change_file_descriptor_out(scommand cmd) {
     assert(cmd != NULL);
 
     char* redir_out = scommand_get_redir_out(cmd);
-    // si la redireción de entrada no está seeteada, scommand_get_redir_in
-    // devuelve NULL
+    // si la redireción de salida no está seeteada, scommand_get_redir_out devuelve NULL
     if (redir_out != NULL) {
 
         /*   open como segundo parametro toma flags, en este caso tiene los
@@ -106,7 +125,7 @@ static int change_file_descriptor_out(scommand cmd) {
                S_IWUSR: user has write permission
              No sabemos con exactitud que pasa si se pone el O_CREAT pero no se
            pasa un tercer parametro */
-        
+
         int file_redir_out =
             open(redir_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 
@@ -123,6 +142,13 @@ static int change_file_descriptor_out(scommand cmd) {
         if (dup2_res == -1) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
             // Si lo hace, dup2 seetea el mensaje de perror
+            perror("");
+            return (-1);
+        }
+
+        int res_close = close(file_redir_out);
+        if (res_close == -1) {
+            // No debería fallar, PERO si falla...
             perror("");
             return (-1);
         }
