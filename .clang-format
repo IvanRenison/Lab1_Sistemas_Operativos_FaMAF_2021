@@ -1,9 +1,7 @@
 BasedOnStyle: LLVM
 
-
 IndentWidth: 4
 PointerAlignment: Left
 ReflowComments: false
-
 
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html

@@ -183,7 +183,7 @@ static int scommand_exec(scommand cmd) {
  * En caso de algún error deja de ejecutar.
  * Modifica apipe, ya que le va sacando los comandos, y si no hay ningún error,
  * lo deja vacío
- * 
+ *
  * Requires: apipe != NULL && !pipeline_is_empty(apipe)
  *
  */
