@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "builtin.h"
 #include "command.h"
@@ -10,51 +11,84 @@
 
 void execute_pipeline(pipeline apipe) {
     assert(apipe != NULL);
-    // Checkear el tamaño de la pipe
-    unsigned int N = pipeline_length(apipe);
-    // Un solo comando
-    if (N == 1) {
-        // Ejecutar el comando
-        printf("Ejecutar el comando...\n");
-        if(builtin_scommand_is_single_internal(apipe)){
-            builtin_single_pipeline_exec(apipe);
+    unsigned int cantidadDeHijos = 0u;
+    pid_t pid;
+    scommand comando;
+
+    while (pipeline_length(apipe) > 1) {
+        comando = pipeline_front_and_pop(apipe);
+
+        if(scommand_is_empty(comando)){
+            comando = scommand_destroy(comando);
         } else {
-            // Proceso hijo
-            int pid = fork();
-            if(pid < 0){
-                perror("fork");
-            } else if (pid == 0){
-                scommand_exec(pipeline_front(apipe));
-            }
-        }
-    } // Varios comandos
-    else {
-        // Recorrer los comandos y ejecutarlos
-        // Checkear si es necesario esperar un comando
-    }
-
-    /*
-    Estructura:
-
-    if(builtin_scommand_is_single_internal(apipe)) {
-        builtin_single_pipeline_exec(apipe);
-    }
-    else {
-        while(!pipeline_is_empty(apipe)) {
-            scommand cmd = pipeline_front(apipe);
-
-            if(!builtin_scommand_is_internal(cmd)) {
-                // frckear y crear el proseso hijo
+            int pipefd[2];
+            int res_pipe = pipe(pipefd);
+            if (res_pipe < 0) {
+                perror("pipe: ");
+                return;
             }
 
-            pipeline_pop_front(apipe);
-        }
-        if(pipeline_get_wait(apipe)) {
-            // Esperar a que terminen los hijos
+            int punta_lectura = pipefd[0];
+            int punta_escritura = pipefd[1];
+
+            pid = fork();
+            if (pid < 0 ) {
+                perror("fork: ");
+                return;
+            }
+
+            if (pid == 0) {
+                // El proceso hijo
+                close(punta_lectura);
+                dup2(punta_escritura, STDOUT_FILENO);
+                close(punta_escritura);
+                scommand_exec(comando);
+                // Esto no se debería ejecutar
+                _exit(1);
+            }
+            else {
+                // El proceso padre
+                cantidadDeHijos++;
+                // Se deja la punta de lectura modificada para el proximo ciclo
+                close(punta_escritura);
+                dup2(punta_lectura, STDIN_FILENO);
+                close(punta_lectura);
+                comando = scommand_destroy(comando);
+            }
         }
     }
-    */
+    // Acá queda un solo comando
+    comando = pipeline_front_and_pop(apipe);
+    if(scommand_is_empty(comando)){
+        comando = scommand_destroy(comando);
+    } else {
+        pid = fork();
+
+        if (pid < 0 ) {
+            perror("fork: ");
+            return;
+        }
+
+        if (pid == 0) {
+            // EL proceso hijo
+            scommand_exec(comando);
+            // Esto no se debería ejecutar
+            _exit(1);
+        }
+        else {
+           // El proceso padre
+            cantidadDeHijos++;
+            comando = scommand_destroy(comando);
+
+        while (cantidadDeHijos > 0) {
+            wait(NULL);
+            cantidadDeHijos--;
+        }
+
+        }
+    }
 }
+
 
 /* Pone, si está seeteado, el archivo de redireción de entrada en el stdin,
  * si no está seeteado no hace nada

@@ -103,7 +103,7 @@ static void builtin_run_cd(const scommand cmd){
                perror toma un string, e imprime primero ese string, y después el
                mensaje de error. man perror para mas información
             */
-            perror("mybash: cd: ");
+            perror("mybash: cd");
         }
     }
     else {

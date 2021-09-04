@@ -136,28 +136,34 @@ static void multiple_pipelines2(pipeline p) {
         comando = pipeline_front_and_pop(p);
         int pipefd[2];
         int res_pipe = pipe(pipefd);
-        assert(res_pipe == 0); ///
+        if (res_pipe < 0) {
+            perror("pipe: ");
+            return;
+        }
 
         int punta_lectura = pipefd[0];
-        int punta_escitura = pipefd[1];
+        int punta_escritura = pipefd[1];
 
         pid = fork();
-        assert(pid >= 0);
+        if (pid < 0 ) {
+            perror("fork: ");
+            return;
+        }
 
         if (pid == 0) {
             // El proceso hijo
             close(punta_lectura);
-            dup2(punta_escitura, STDOUT_FILENO);
-            close(punta_escitura);
+            dup2(punta_escritura, STDOUT_FILENO);
+            close(punta_escritura);
             scommand_exec(comando);
             // Esto no se debería ejecutar
-            exit(EXIT_FAILURE); ////
+            _exit(1);
         }
         else {
             // El proceso padre
             cantidadDeHijos++;
             // Se deja la punta de lectura modificada para el proximo ciclo
-            close(punta_escitura);
+            close(punta_escritura);
             dup2(punta_lectura, STDIN_FILENO);
             close(punta_lectura);
             comando = scommand_destroy(comando);
@@ -166,13 +172,17 @@ static void multiple_pipelines2(pipeline p) {
     // Acá queda un solo comando
     comando = pipeline_front_and_pop(p);
     pid = fork();
-    assert(pid >= 0);
+
+    if (pid < 0 ) {
+            perror("fork: ");
+            return;
+    }
 
     if (pid == 0) {
         // EL proceso hijo
         scommand_exec(comando);
         // Esto no se debería ejecutar
-        exit(EXIT_FAILURE); ////
+        _exit(1);
     }
     else {
         // El proceso padre
@@ -194,20 +204,19 @@ static void multiple_pipelines2(pipeline p) {
 int main(void) {
 
     scommand comando1 = scommand_new();
-    scommand_push_back(comando1, strdup("ls"));
 
-    scommand comando2 = scommand_new();
+    /*scommand comando2 = scommand_new();
     scommand_push_back(comando2, strdup("cd"));
     scommand_push_back(comando2, strdup("c"));
 
     scommand comando3 = scommand_new();
     scommand_push_back(comando3, strdup("wc"));
-    scommand_push_back(comando3, strdup("-l"));
+    scommand_push_back(comando3, strdup("-l"));*/
 
     pipeline p = pipeline_new();
     pipeline_push_back(p, comando1);
-    pipeline_push_back(p, comando2);
-    pipeline_push_back(p, comando3);
+    /*pipeline_push_back(p, comando2);
+    pipeline_push_back(p, comando3);*/
 
     multiple_pipelines2(p);
 
