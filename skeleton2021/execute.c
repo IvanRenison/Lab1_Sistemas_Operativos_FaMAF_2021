@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "builtin.h"
 #include "command.h"
@@ -173,7 +174,15 @@ static int scommand_exec(scommand cmd) {
         builtin_scommand_exec(cmd);
         ret_code = 0;
     } else {
-        ret_code = scommand_exec_external(cmd);
+        int pid = fork();
+        if(pid == -1){
+            perror("fork");
+            ret_code = -1;
+        } else if (pid == 0){
+            scommand_exec_external(cmd);
+            _exit(1);
+        }
+        wait(NULL);
     }
 
     return (ret_code);
@@ -264,67 +273,55 @@ static int scommand_exec(scommand cmd) {
     }
 }*/
 
-void execute_pipeline(pipeline p) {
+
+/* Ejecuta desde pipes con 1 solo comando (interno o externo), hasta pipes con multiples 
+comandos, no destruye el pipeline pero si va eliminando sus elementos durante la ejecución.
+*/
+void execute_pipeline(pipeline p){
     int numberOfPipes = pipeline_length(p) - 1;
 
     int status;
-    int i = 0;
+    int fd_in = 0;
     pid_t pid;
+    int pipefd[2];
 
-    int* pipefds = calloc(2 * numberOfPipes, sizeof(int));
-
-    for (i = 0; i < (numberOfPipes); i++) {
-        if (pipe(pipefds + i * 2) < 0) {
-            perror("Pipe failed");
-        }
-    }
-
-    int j = 0;
-    while (!pipeline_is_empty(p)) {
-        pid = fork();
-        if (pid < 0) {
-            perror("Fork failed");
-            _exit(-2);
-        } else if (pid == 0) {
-
-            if (pipeline_length(p) > 1) {
-                if (dup2(pipefds[j + 1], STDOUT_FILENO) < 0) {
-                    perror("dup2");
-                }
-            }
-
-            if (j != 0) {
-                if (dup2(pipefds[j - 2], STDIN_FILENO) < 0) {
-                    perror("dup2");
-                }
-            }
-
-            for (i = 0; i < 2 * numberOfPipes; i++) {
-                close(pipefds[i]);
-            }
-
-            if (scommand_exec(pipeline_front(p)) == -1) {
-                _exit(-2);
-            }
-        }
-        if (!pipeline_is_empty(p)) {
-            pipeline_pop_front(p);
-        }
-        j += 2;
-    }
-
-    for (i = 0; i < 2 * numberOfPipes; i++) {
-        close(pipefds[i]);
-    }
-
-    if (!pipeline_get_wait(p)) {
-        for (i = 0; i <= numberOfPipes; i++) {
-            waitpid(-1, &status, WNOHANG);
-        }
+    if(numberOfPipes == 0){
+        scommand_exec(pipeline_front(p));
     } else {
-        for (i = 0; i <= numberOfPipes; i++) {
-            wait(&status);
+        while(!pipeline_is_empty(p)){
+            if(pipe(pipefd) < 0){
+                perror("pipe: ");
+                exit(1);
+            } else {
+                if((pid = fork()) == -1){
+                    perror("fork: ");
+                    exit(1);
+                } else if (pid == 0){
+                    if(dup2(fd_in, STDIN_FILENO) < 0){
+                        perror("dup2: ");
+                        _exit(1);
+                    }  
+                    
+                    if(pipeline_length(p) > 1){
+                        if(dup2(pipefd[1], STDOUT_FILENO) < 0){
+                            perror("dup2: ");
+                            _exit(1);
+                        }
+                    }
+                    close(pipefd[0]);
+                    close(pipefd[1]);
+                    scommand_exec(pipeline_front(p));
+                    _exit(1);
+                } 
+                if(!pipeline_get_wait(p)){
+                    waitpid(-1, &status, WNOHANG);
+                } else {
+                    wait(&status);
+                }
+                close(pipefd[1]);
+                pipeline_pop_front(p);
+                fd_in = pipefd[0];
+            }
         }
     }
-    free(pipefds);
 }
