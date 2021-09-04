@@ -10,7 +10,7 @@
 #include "command.h"
 #include "execute.h"
 
-/* Pone, si está seeteado, el archivo de redirección de entrada en el stdin,
+/* Pone, si está seeteado, el archivo de redireción de entrada en el stdin,
  * si no está seeteado no hace nada
  * Returns: 0 si la operación fue exitosa
  *          1 si la operación falló
@@ -120,19 +120,20 @@ static int change_file_descriptor_out(scommand cmd) {
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  *
  */
-static int scommand_exec_external(scommand cmd) {
+int scommand_exec_external(scommand cmd);
+int scommand_exec_external(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
     // Se cambia stdin por el archivo de redirección de entrada, si es que está seeteado
     int exit_redir_in = change_file_descriptor_in(cmd);
     if (exit_redir_in != 0) {
-        return (-1);
+        return(-1);
     }
 
     // Se cambia stdout por el archivo de redirección de salida, si es que está seeteado
     int exit_redir_out = change_file_descriptor_out(cmd);
     if (exit_redir_out != 0) {
-        return (-1);
+        return(-1);
     }
 
     char** argv = scommand_to_argv(cmd);
@@ -142,6 +143,7 @@ static int scommand_exec_external(scommand cmd) {
     /* Si execvp falla (y por ende retorna) se imprime un mensaje
       y se libera la memoria */
     perror(argv[0]);
+    ret_code = ret_code;
 
     unsigned int j = 0u;
     while (argv[j] != NULL) {
@@ -152,7 +154,7 @@ static int scommand_exec_external(scommand cmd) {
     free(argv);
     argv = NULL;
 
-    return (ret_code);
+    return ret_code;
 }
 
 /* Ejecuta un comando, tanto si es interno como si es externo
@@ -186,7 +188,7 @@ static int scommand_exec(scommand cmd) {
  * Requires: apipe != NULL && !pipeline_is_empty(apipe)
  *
  */
-static void execute_multiple_pipelines(pipeline apipe) {
+/*static void execute_multiple_pipelines(pipeline apipe) {
     assert(apipe != NULL && !pipeline_is_empty(apipe));
 
     unsigned int cantidadDeHijos = 0u;
@@ -261,30 +263,69 @@ static void execute_multiple_pipelines(pipeline apipe) {
         wait(NULL);
         cantidadDeHijos--;
     }
-}
+}*/
 
-void execute_pipeline(pipeline apipe) {
-    assert(apipe != NULL);
-    // Checkear el tamaño de la pipe
-    unsigned int N = pipeline_length(apipe);
-    // Un solo comando
-    if (N == 1) {
-        // Ejecutar el comando
-        printf("Ejecutar el comando...\n");
-        if (builtin_scommand_is_single_internal(apipe)) {
-            builtin_single_pipeline_exec(apipe);
-        } else {
-            // Proceso hijo
-            int pid = fork();
-            if (pid < 0) {
-                perror("fork");
-            } else if (pid == 0) {
-                scommand_exec(pipeline_front(apipe));
-            }
+void execute_pipeline(pipeline p){
+    int numberOfPipes = pipeline_length(p) - 1;
+
+    int status;
+    int i = 0;
+    pid_t pid;
+
+    int * pipefds = calloc(2*numberOfPipes, sizeof(int));
+
+    for(i = 0; i < (numberOfPipes); i ++){
+        if(pipe(pipefds + i*2) < 0){
+            perror("Pipe failed");
         }
-    } // Varios comandos
-    else {
-        // Recorrer los comandos y ejecutarlos
-        // Checkear si es necesario esperar un comando
     }
+
+    int j = 0;
+    while(!pipeline_is_empty(p)){
+        pid = fork();
+        if(pid < 0){
+            perror("Fork failed");
+            _exit(-2);
+        } else if (pid == 0){
+            
+            if(pipeline_length(p) > 1){
+                if(dup2(pipefds[j + 1], STDOUT_FILENO) < 0){
+                    perror("dup2");
+                }
+           }
+
+            if(j != 0){
+                if(dup2(pipefds[j - 2], STDIN_FILENO) < 0){
+                    perror("dup2");         
+               }
+           }
+
+            for(i = 0; i < 2 * numberOfPipes; i++){
+                close(pipefds[i]);
+           }
+
+            if (scommand_exec(pipeline_front(p)) == -1) {
+                _exit(-2);
+            }
+        } 
+      if(!pipeline_is_empty(p)){
+            pipeline_pop_front(p);
+        }
+        j += 2;
+    } 
+
+    for(i = 0; i < 2 * numberOfPipes; i++){
+        close(pipefds[i]);
+    }
+
+    if(!pipeline_get_wait(p)){
+        for(i = 0; i <= numberOfPipes ; i++){
+             waitpid(-1, &status, WNOHANG);
+        }
+    } else {
+        for(i = 0; i <= numberOfPipes ; i++){
+            wait(&status);
+        }
+    }
+    free(pipefds);
 }
