@@ -22,8 +22,7 @@ static int change_file_descriptor_in(scommand cmd) {
     assert(cmd != NULL);
 
     char* redir_in = scommand_get_redir_in(cmd);
-    // si la redirección de entrada no está seeteada, scommand_get_redir_in
-    // devuelve NULL
+    // si la redirección de entrada no está seeteada, scommand_get_redir_in devuelve NULL
     if (redir_in != NULL) {
         int file_redir_in = open(redir_in, O_RDONLY);
         // Si el archivo no existe, o hay algún otro tipo de error, open retorna
@@ -180,10 +179,10 @@ static int scommand_exec(scommand cmd) {
     return (ret_code);
 }
 
-/* Ejecuta un pipeline no vacio, creando procesos hijos incluso para los comandos internos
+/* Ejecuta un pipeline no vacío, creando procesos hijos incluso para los comandos internos
  * En caso de algún error deja de ejecutar.
  * Modifica apipe, ya que le va sacando los comandos, y si no hay ningún error,
- * lo deja vacio
+ * lo deja vacío
  * 
  * Requires: apipe != NULL && !pipeline_is_empty(apipe)
  *
