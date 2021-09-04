@@ -11,7 +11,13 @@
 #include "builtin.h"
 #include "command.h"
 #include "execute.h"
+#include "prompt.h"
 
+
+static void test_prompt(void){
+    printf("test_prompt...\n");
+    show_prompt();
+}
 
 static void test_pipelines(void){
     printf("test_pipelines..\n");
@@ -64,6 +70,7 @@ static void test_pipelines(void){
 }
 
 int main(void){
+    test_prompt();
     test_pipelines();
     return (EXIT_SUCCESS);
 }
