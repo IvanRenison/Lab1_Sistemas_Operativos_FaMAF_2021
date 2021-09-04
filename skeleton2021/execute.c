@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/prctl.h>
 
 #include "builtin.h"
 #include "command.h"
@@ -167,7 +168,7 @@ int scommand_exec_external(scommand cmd) {
  *
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  */
-static int scommand_exec(scommand cmd) {
+static int scommand_exec(scommand cmd, bool wt) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
     int ret_code = 0;
     if (builtin_scommand_is_internal(cmd)) {
@@ -175,6 +176,7 @@ static int scommand_exec(scommand cmd) {
         ret_code = 0;
     } else {
         int pid = fork();
+        int status;
         if(pid == -1){
             perror("fork");
             ret_code = -1;
@@ -182,7 +184,11 @@ static int scommand_exec(scommand cmd) {
             scommand_exec_external(cmd);
             _exit(1);
         }
-        wait(NULL);
+        if(wt){
+            wait(NULL);
+        } else {
+            pid = waitpid(pid, &status, WNOHANG);
+        }
     }
 
     return (ret_code);
@@ -286,7 +292,7 @@ void execute_pipeline(pipeline p){
     int pipefd[2];
 
     if(numberOfPipes == 0){
-        scommand_exec(pipeline_front(p));
+        scommand_exec(pipeline_front(p), pipeline_get_wait(p));
     } else {
         while(!pipeline_is_empty(p)){
             if(pipe(pipefd) < 0){
@@ -310,11 +316,12 @@ void execute_pipeline(pipeline p){
                     }
                     close(pipefd[0]);
                     close(pipefd[1]);
-                    scommand_exec(pipeline_front(p));
+                    scommand_exec(pipeline_front(p), true);
                     _exit(1);
-                } 
+                }
+
                 if(!pipeline_get_wait(p)){
-                    waitpid(-1, &status, WNOHANG);
+                    pid = waitpid(-1, &status, WNOHANG);
                 } else {
                     wait(&status);
                 }
