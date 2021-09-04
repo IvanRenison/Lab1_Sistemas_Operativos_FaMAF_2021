@@ -126,13 +126,13 @@ int scommand_exec_external(scommand cmd) {
     // Se cambia stdin por el archivo de redirección de entrada, si es que está seeteado
     int exit_redir_in = change_file_descriptor_in(cmd);
     if (exit_redir_in != 0) {
-        return(-1);
+        return (-1);
     }
 
     // Se cambia stdout por el archivo de redirección de salida, si es que está seeteado
     int exit_redir_out = change_file_descriptor_out(cmd);
     if (exit_redir_out != 0) {
-        return(-1);
+        return (-1);
     }
 
     char** argv = scommand_to_argv(cmd);
@@ -264,65 +264,65 @@ static int scommand_exec(scommand cmd) {
     }
 }*/
 
-void execute_pipeline(pipeline p){
+void execute_pipeline(pipeline p) {
     int numberOfPipes = pipeline_length(p) - 1;
 
     int status;
     int i = 0;
     pid_t pid;
 
-    int * pipefds = calloc(2*numberOfPipes, sizeof(int));
+    int* pipefds = calloc(2 * numberOfPipes, sizeof(int));
 
-    for(i = 0; i < (numberOfPipes); i ++){
-        if(pipe(pipefds + i*2) < 0){
+    for (i = 0; i < (numberOfPipes); i++) {
+        if (pipe(pipefds + i * 2) < 0) {
             perror("Pipe failed");
         }
     }
 
     int j = 0;
-    while(!pipeline_is_empty(p)){
+    while (!pipeline_is_empty(p)) {
         pid = fork();
-        if(pid < 0){
+        if (pid < 0) {
             perror("Fork failed");
             _exit(-2);
-        } else if (pid == 0){
-            
-            if(pipeline_length(p) > 1){
-                if(dup2(pipefds[j + 1], STDOUT_FILENO) < 0){
+        } else if (pid == 0) {
+
+            if (pipeline_length(p) > 1) {
+                if (dup2(pipefds[j + 1], STDOUT_FILENO) < 0) {
                     perror("dup2");
                 }
-           }
+            }
 
-            if(j != 0){
-                if(dup2(pipefds[j - 2], STDIN_FILENO) < 0){
-                    perror("dup2");         
-               }
-           }
+            if (j != 0) {
+                if (dup2(pipefds[j - 2], STDIN_FILENO) < 0) {
+                    perror("dup2");
+                }
+            }
 
-            for(i = 0; i < 2 * numberOfPipes; i++){
+            for (i = 0; i < 2 * numberOfPipes; i++) {
                 close(pipefds[i]);
-           }
+            }
 
             if (scommand_exec(pipeline_front(p)) == -1) {
                 _exit(-2);
             }
-        } 
-      if(!pipeline_is_empty(p)){
+        }
+        if (!pipeline_is_empty(p)) {
             pipeline_pop_front(p);
         }
         j += 2;
-    } 
+    }
 
-    for(i = 0; i < 2 * numberOfPipes; i++){
+    for (i = 0; i < 2 * numberOfPipes; i++) {
         close(pipefds[i]);
     }
 
-    if(!pipeline_get_wait(p)){
-        for(i = 0; i <= numberOfPipes ; i++){
-             waitpid(-1, &status, WNOHANG);
+    if (!pipeline_get_wait(p)) {
+        for (i = 0; i <= numberOfPipes; i++) {
+            waitpid(-1, &status, WNOHANG);
         }
     } else {
-        for(i = 0; i <= numberOfPipes ; i++){
+        for (i = 0; i <= numberOfPipes; i++) {
             wait(&status);
         }
     }
