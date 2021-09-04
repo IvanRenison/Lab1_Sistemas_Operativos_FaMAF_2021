@@ -66,13 +66,21 @@ void scommand_push_back(scommand self, char* argument);
 void scommand_pop_front(scommand self);
 
 /*
- * Define la redirección de entrada (salida).
- *   self: comando simple al cual establecer la redirección de entrada (salida).
+ * Define la redirección de entrada.
+ *   self: comando simple al cual establecer la redirección de entrada.
  *   filename: cadena con el nombre del archivo de la redirección
  *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
  * Requires: self != NULL
  */
 void scommand_set_redir_in(scommand self, char* filename);
+
+/*
+ * Define la redirección de salida.
+ *   self: comando simple al cual establecer la redirección de salida.
+ *   filename: cadena con el nombre del archivo de la redirección
+ *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
+ * Requires: self != NULL
+ */
 void scommand_set_redir_out(scommand self, char* filename);
 
 /* Proyectores */
@@ -125,14 +133,23 @@ char* scommand_front_and_pop(scommand self);
 char* scommand_get_nth(scommand self, unsigned int n);
 
 /*
- * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
+ * Obtiene los nombres de archivos a donde redirigir la entrada.
  *   self: comando simple a decidir si está vacío.
- *   Returns: nombre del archivo a donde redirigir la entrada (salida).
+ *   Returns: nombre del archivo a donde redirigir la entrada.
  *     La cadena retornada sigue siendo propiedad del TAD
  *	o NULL si no está redirigida.
  * Requires: self != NULL
  */
 char* scommand_get_redir_in(const scommand self);
+
+/*
+ * Obtiene los nombres de archivos a donde redirigir la salida.
+ *   self: comando simple a decidir si está vacío.
+ *   Returns: nombre del archivo a donde redirigir la salida.
+ *     La cadena retornada sigue siendo propiedad del TAD
+ *	o NULL si no está redirigida.
+ * Requires: self != NULL
+ */
 char* scommand_get_redir_out(const scommand self);
 
 /*
