@@ -3,6 +3,11 @@
 - Renison, Iván
 - Vispo, Valentina Solange
 
+---
+
+**[README](README.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)**
+
+---
 # Contenido
 - [¿Cómo correrlo?](#¿Cómo-correrlo?)
     - [Correr nuestros tests](#Correr-nuestros-tests)
@@ -371,3 +376,7 @@ ReflowComments: false
 Referencia:
 
 - [ClangFormatStyleOptions](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+
+---
+
+**[README](README.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)**
