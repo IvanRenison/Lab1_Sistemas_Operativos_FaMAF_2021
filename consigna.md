@@ -5,6 +5,11 @@
 - [Puntos estrellas](#Puntos-estrellas)
     - [Extras nuestros](#Extas-nuestros)
 
+---
+
+**[INFORME](informe.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)**
+
+---
 # Consigna
 ## Algunos consejos
 - Antes que nada completar y probar la implementación del TAD scommand y pipeline que será la interfaz de comunicación entre los módulos propuestos.
@@ -68,3 +73,7 @@ Entonces, quería preguntar, ¿podemos modificar un poco el módulo builtin (agr
 > Para este lab, podés asumir que si el primer comando de un pipeline es un builtin, entonces el pipeline tiene un único comando. O sea, que no vas a recibir cosas como cd lala | ls -l. O, si lo recibís, sólo vas a ejecutar el cd y listo.
 
 > Hola grupo! Si quieren modificar el builtin, me encanta la idea, pero i) haganlo una vez que terminen el execute, sería como "punto estrella", ii) no les prometo que no les robemos el código para el año que viene si queda lindo :P
+
+---
+
+**[INFORME](informe.md) | [CONSIGNA](consigna.md) | [To Do](todo.md)**
