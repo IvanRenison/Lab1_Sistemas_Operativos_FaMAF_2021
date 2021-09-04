@@ -156,8 +156,8 @@ static int change_file_descriptor_out(scommand cmd) {
     return (0);
 }
 
-/* Ejecuta un comando en el mismo proseso, es decir sin hacer fork,
- * redirigendo el srdin y el stdout si están seeteados
+/* Ejecuta un comando como comando externo en el mismo proseso, es decir sin hacer
+ * fork, redirigiendo el stdin y el stdout si están seeteados
  * Puede modificar cmd, pero no destruirlo
  * Si la llamada sale bien no se retorna, si la llamada sale mal, si hay algún
  * problema con la redireción de entrada o de salida se retorna -1, y si la llamada
@@ -167,7 +167,7 @@ static int change_file_descriptor_out(scommand cmd) {
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  *
  */
-int scommand_exec(scommand cmd) {
+static int scommand_exec_external(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
     // Se cambia stdin por el archivo de redireción de entrada, si es que está seeteado
@@ -199,3 +199,30 @@ int scommand_exec(scommand cmd) {
 
     return (ret_code);
 }
+
+
+/* Ejecuta un comando, tanto si es interno como si es externo
+ * En el caso de ser externo solo retorno si hay un error, y en ese caso,
+ * devuelve -1. En caso se ser un interno, retorna 0.
+ * Puede modificar cmd, pero no destruirlo
+ * 
+ * En caso de fallar la llamada al programa, los descriptores de archivo pueden quedar
+ * cambiados por los de redireción de entrada y de salida
+ *
+ * Requires: cmd != NULL && !scommand_is_empty(cmd)
+ */
+int scommand_exec(scommand cmd) {
+    assert(cmd != NULL && !scommand_is_empty(cmd));
+    int ret_code = 0;
+    if (builtin_scommand_is_internal(cmd)) {
+        builtin_scommand_exec(cmd);
+        ret_code = 0;
+    }
+    else {
+        ret_code = scommand_exec_external(cmd);
+    }
+
+    return (ret_code);
+}
+
+
