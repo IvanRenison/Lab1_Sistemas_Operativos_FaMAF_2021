@@ -15,6 +15,7 @@
  * Requires: apipe != NULL
  */
 void execute_pipeline(pipeline apipe);
+void zombie_handler(void);
 
 
 

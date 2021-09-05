@@ -10,6 +10,7 @@
 #include "command.h"
 #include "execute.h"
 
+
 /* Pone, si existe, el archivo de redireción de entrada en el stdin,
  * si no existe no hace nada
  * Returns: 0 si la operación fue exitosa
@@ -193,8 +194,8 @@ void execute_pipeline(pipeline p){
     int fd_in = 0;
     int pipefd[2];
     pid_t pid;
-    pid_t fgLeader = 0;
-    pid_t bgLeader = 0;
+    pid_t fgLeader = -1;
+    pid_t bgLeader = -1;
     bool wait = pipeline_get_wait(p);
 
     //Caso en el que el pipe solo tiene un comando
@@ -230,7 +231,9 @@ void execute_pipeline(pipeline p){
             //pipeline no se encuentra el caracter & que indica que el proceso se corre
             //en background
             if (wait) {
-                 waitpid(pid, &status, 0);
+                waitpid(pid, &status, 0);
+            } else {
+                waitpid(pid, &status, WNOHANG);
             }
         }
     } else {
@@ -239,7 +242,15 @@ void execute_pipeline(pipeline p){
             int res_pipe = pipe(pipefd);
             if (res_pipe < 0) {
                 perror("pipe: ");
-                exit(1);
+                if((wait && fgLeader == -1) || (!wait && bgLeader == -1)){
+                    return;
+                } else if (fgLeader != -1){
+                    killpg(getpgid(pid), SIGKILL);
+                    return;
+                } else if (bgLeader != -1){
+                    killpg(getpgid(pid), SIGKILL);
+                    return;
+                }
             } else {
                 pid = fork();
                 if (pid  == -1) {
@@ -247,7 +258,7 @@ void execute_pipeline(pipeline p){
                     exit(1);
                 } else if (pid == 0) {
 
-                    int res_dup = dup2(fd_in, STDIN_FILENO) < 0;
+                    int res_dup = dup2(fd_in, STDIN_FILENO);
                     if(res_dup < 0){
                         perror("dup2: ");
                         _exit(1);
@@ -286,12 +297,23 @@ void execute_pipeline(pipeline p){
                 //& en el pipeline, en este caso va a esperar a todos los procesos que van a estar
                 //en el grupo de procesos fgLeader
                 if (wait) {
-                 waitpid(pid, &status, 0);
+                    waitpid(pid, &status, 0);
+                } else {
+                    waitpid(pid, &status, WNOHANG);
                 }
                 close(pipefd[1]);
                 pipeline_pop_front(p);
                 fd_in = pipefd[0];
             }
         }
+    }
+}
+
+
+void zombie_handler(){
+    for (pid_t pid = waitpid(-1 ,NULL,WNOHANG);
+             pid != 0 && pid != -1;
+             pid = waitpid(-1,NULL,WNOHANG)){
+                 wait(NULL);
     }
 }
