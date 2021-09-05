@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
             quit = quit || builtin_scommand_is_exit(pipeline_front(pipe));
             execute_pipeline(pipe);
             pipeline_destroy(pipe);
-        } else if (!quit) {
+        } else if (!quit && pipe != NULL) {
             printf("Comando no valido\n");
         }
     }

@@ -5,15 +5,13 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <string.h>
-#include <sys/prctl.h>
 
 #include "builtin.h"
 #include "command.h"
 #include "execute.h"
 
-/* Pone, si está seeteado, el archivo de redireción de entrada en el stdin,
- * si no está seeteado no hace nada
+/* Pone, si existe, el archivo de redireción de entrada en el stdin,
+ * si no existe no hace nada
  * Returns: 0 si la operación fue exitosa
  *          1 si la operación falló
  *
@@ -54,8 +52,8 @@ static int change_file_descriptor_in(scommand cmd) {
     return (0);
 }
 
-/* Pone, si está seeteado, el archivo de redirección de salida en el stdout,
- * si el archivo en existe lo crea
+/* Pone, si existe, el archivo de redirección de salida en el stdout,
+ * si el archivo no existe lo crea.
  * Si la redirección de salida no está seeteada no hace nada
  * Returns: 0 si la operación fue exitosa
  *          1 si la operación falló
@@ -70,21 +68,20 @@ static int change_file_descriptor_out(scommand cmd) {
     // si la redirección de salida no está seeteada, scommand_get_redir_out devuelve NULL
     if (redir_out != NULL) {
 
-        /*   open como segundo parametro toma flags, en este caso tiene los
+        /*  open como segundo parametro toma flags, en este caso tiene los
            flags O_WRONLY que hace que el archivo se abra en solo escritura, y
            O_CREAT que hace que si el archivo no existe, se cree. En el caso de
            estar seeteado O_CREAT, open toma un tercer parametro de flags de
            cración del archivo, en este caso están puestos los flags:
                S_IRUSR: user has read permission
                S_IWUSR: user has write permission
-             No sabemos con exactitud que pasa si se pone el O_CREAT pero no se
-           pasa un tercer parametro */
+             */
 
         int file_redir_out =
             open(redir_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 
-        // Si hay algún error devuelve -1, en caso de que no exista el archivo,
-        // lo crea si no hay error retorna el descriptor del archivo
+        // Si hay algún error devuelve -1, en caso de que no exista el archivo
+        // lo crea, si no hay error retorna el descriptor del archivo
         if (file_redir_out == -1) {
             // En caso de error, open seetea el mansaje de perror
             perror(redir_out);
@@ -110,7 +107,7 @@ static int change_file_descriptor_out(scommand cmd) {
     return (0);
 }
 
-/* Ejecuta un comando como comando externo en el mismo proseso, es decir sin hacer
+/* Ejecuta un comando como comando externo en el mismo proceso, es decir sin hacer
  * fork, redirigiendo el stdin y el stdout si están seeteados
  * Puede modificar cmd, pero no destruirlo
  * Si la llamada sale bien no se retorna, si la llamada sale mal, si hay algún
@@ -159,7 +156,7 @@ int scommand_exec_external(scommand cmd) {
 }
 
 /* Ejecuta un comando, tanto si es interno como si es externo
- * En el caso de ser externo solo retorno si hay un error, y en ese caso,
+ * En el caso de ser externo solo retorna si hay un error, y en ese caso,
  * devuelve -1. En caso se ser un interno, retorna 0.
  * Puede modificar cmd, pero no destruirlo
  * 
@@ -168,162 +165,128 @@ int scommand_exec_external(scommand cmd) {
  *
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  */
-static int scommand_exec(scommand cmd, bool wt) {
+static int scommand_exec(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
     int ret_code = 0;
     if (builtin_scommand_is_internal(cmd)) {
         builtin_scommand_exec(cmd);
         ret_code = 0;
     } else {
-        int pid = fork();
-        int status;
-        if(pid == -1){
-            perror("fork");
-            ret_code = -1;
-        } else if (pid == 0){
-            scommand_exec_external(cmd);
-            _exit(1);
-        }
-        if(wt){
-            wait(NULL);
-        } else {
-            pid = waitpid(pid, &status, WNOHANG);
-        }
+        scommand_exec_external(cmd);
     }
 
     return (ret_code);
 }
 
-/* Ejecuta un pipeline no vacío, creando procesos hijos incluso para los comandos internos
- * En caso de algún error deja de ejecutar.
- * Modifica apipe, ya que le va sacando los comandos, y si no hay ningún error,
- * lo deja vacío
- *
- * Requires: apipe != NULL && !pipeline_is_empty(apipe)
- *
- */
-/*static void execute_multiple_pipelines(pipeline apipe) {
-    assert(apipe != NULL && !pipeline_is_empty(apipe));
-
-    unsigned int cantidadDeHijos = 0u;
-    bool error_flag = false;
-    // Variable para saber si hubo un error
-    // Si está en false es porque no hubo errores, si se vuelve true es porque si hubo
-
-    while (!error_flag && pipeline_length(apipe) > 1) {
-        scommand comando = pipeline_front_and_pop(apipe);
-
-        if (!scommand_is_empty(comando)) {
-            int pipefd[2];
-            int res_pipe = pipe(pipefd);
-            if (res_pipe < 0) {
-                perror("pipe");
-                error_flag = true;
-            }
-            else {
-                int punta_lectura = pipefd[0];
-                int punta_escritura = pipefd[1];
-
-                pid_t pid = fork();
-                if (pid < 0) {
-                    perror("fork");
-                    error_flag = true;
-                } else if (pid == 0) {
-                    // El proceso hijo
-                    close(punta_lectura);
-                    dup2(punta_escritura, STDOUT_FILENO);
-                    close(punta_escritura);
-                    scommand_exec(comando);
-                    // Esto no se debería ejecutar
-                    _exit(EXIT_FAILURE);
-                }
-                else {
-                    // El proceso padre
-                    cantidadDeHijos++;
-                    // Se deja la punta de lectura modificada para el proximo ciclo
-                    close(punta_escritura);
-                    dup2(punta_lectura, STDIN_FILENO);
-                    close(punta_lectura);
-                }
-            }
-        }
-        comando = scommand_destroy(comando);
-    }
-    if (!error_flag) {
-        // Acá queda un solo comando
-        // Ya que el while se ejecuto hasta que pipeline_length(apipe) = 1
-        scommand comando = pipeline_front_and_pop(apipe);
-        if (!scommand_is_empty(comando)) {
-            pid_t pid = fork();
-            if (pid < 0) {
-                perror("fork");
-                error_flag = true;
-            } else if (pid == 0) {
-                // EL proceso hijo
-                scommand_exec(comando);
-                // Esto no se debería ejecutar
-                _exit(EXIT_FAILURE);
-            }
-            else {
-                // El proceso padre
-                cantidadDeHijos++;
-            }
-        }
-        comando = scommand_destroy(comando);
-    }
-
-    // Se espera a que todos los proseso hijos terminen
-    while (cantidadDeHijos > 0) {
-        wait(NULL);
-        cantidadDeHijos--;
-    }
-}*/
-
-
-/* Ejecuta desde pipes con 1 solo comando (interno o externo), hasta pipes con multiples 
-comandos, no destruye el pipeline pero si va eliminando sus elementos durante la ejecución.
+/* Se encarga de ejecutar todos los comandos que se ingresan en el bash, desde los 
+ * comandos simples (externos e internos), como los pipelines de 2 o más comandos, en el bash
+ * se puede pasar el parámetro & el cual indica que los procesos se corren en background, es
+ * decir el proceso padre no espera a que terminen los mismos.
+ * No devuelve nada, dentro de los procesos hijos se realiza el manejo de los errores para
+ * que la función muestre un mensaje de error en caso de que un dup2, fork o pipe falle.
+ * No destruye el pipeline, pero si elimina sus elementos con pipeline_front_pop()
 */
 void execute_pipeline(pipeline p){
     int numberOfPipes = pipeline_length(p) - 1;
 
     int status;
     int fd_in = 0;
-    pid_t pid;
     int pipefd[2];
+    pid_t pid;
+    pid_t fgLeader = 0;
+    pid_t bgLeader = 0;
+    bool wait = pipeline_get_wait(p);
 
-    if(numberOfPipes == 0){
-        scommand_exec(pipeline_front(p), pipeline_get_wait(p));
+    //Caso en el que el pipe solo tiene un comando
+    if (numberOfPipes == 0) {
+        //Caso en el que comando es interno 
+        if (builtin_scommand_is_single_internal(p)) {
+            builtin_single_pipeline_exec(p);
+        } else {
+            //Caso en el que el comando es externo y se debe hacer fork()
+            pid_t pid = fork();
+            if (pid < 0) {
+                perror("fork: ");
+                exit(1);
+            } else if (pid == 0) {
+                //Se crea un grupo para clasificar el proceso, fgLeader en caso de 
+                //el proceso se corra en la terminal y bgLeader en caso de que se corra
+                //en background con &
+                if (wait) {
+                    if (fgLeader == -1) {
+                        fgLeader = getpid();
+                    }
+                    setpgid(getpid(), fgLeader);
+                } else {
+                    if (bgLeader == -1) {
+                        bgLeader = getpid();
+                    }
+                    setpgid(getpid(), bgLeader);
+                }
+                scommand_exec(pipeline_front(p));
+                _exit(1);
+            }
+            //El proceso padre solo espera al conjunto de procesos en fgLeader si en el 
+            //pipeline no se encuentra el caracter & que indica que el proceso se corre
+            //en background
+            if (wait) {
+                 waitpid(pid, &status, 0);
+            }
+        }
     } else {
-        while(!pipeline_is_empty(p)){
-            if(pipe(pipefd) < 0){
+        //Caso en el que haya un pipeline multiple
+        while (!pipeline_is_empty(p)) {
+            int res_pipe = pipe(pipefd);
+            if (res_pipe < 0) {
                 perror("pipe: ");
                 exit(1);
             } else {
-                if((pid = fork()) == -1){
+                pid = fork();
+                if (pid  == -1) {
                     perror("fork: ");
                     exit(1);
-                } else if (pid == 0){
-                    if(dup2(fd_in, STDIN_FILENO) < 0){
+                } else if (pid == 0) {
+
+                    int res_dup = dup2(fd_in, STDIN_FILENO) < 0;
+                    if(res_dup < 0){
                         perror("dup2: ");
                         _exit(1);
                     }  
-                    
+
+                    //Si el comando no es el ultimo se coloca la salida del pipe
+                    //en el stdout 
                     if(pipeline_length(p) > 1){
-                        if(dup2(pipefd[1], STDOUT_FILENO) < 0){
+                        res_dup = dup2(pipefd[1], STDOUT_FILENO);
+                        if(res_dup < 0){
                             perror("dup2: ");
                             _exit(1);
                         }
                     }
+
+                    //Se clasifican los procesos en grupos para despues poder saber para
+                    //cuales procesos debe esperar el proceso padre
+                    if (wait) {
+                        if (fgLeader == -1) {
+                            fgLeader = getpid();
+                        }
+                        setpgid(getpid(), fgLeader);
+                    } else {
+                        if (bgLeader == -1) {
+                            bgLeader = getpid();
+                        }
+                        setpgid(getpid(), bgLeader);
+                    }
+
                     close(pipefd[0]);
                     close(pipefd[1]);
-                    scommand_exec(pipeline_front(p), true);
+                    scommand_exec(pipeline_front(p));
                     _exit(1);
                 }
-
-                if(!pipeline_get_wait(p)){
-                    pid = waitpid(-1, &status, WNOHANG);
-                } else {
-                    wait(&status);
+                //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
+                //& en el pipeline, en este caso va a esperar a todos los procesos que van a estar
+                //en el grupo de procesos fgLeader
+                if (wait) {
+                 waitpid(pid, &status, 0);
                 }
                 close(pipefd[1]);
                 pipeline_pop_front(p);

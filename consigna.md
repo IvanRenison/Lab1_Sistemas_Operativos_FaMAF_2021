@@ -46,7 +46,7 @@ El proyecto deberá:
 # Puntos Estrellas
 
 Se pueden optativa menterealizar las siguientes mejoras a nuestro bash:
-- Generalizar el comando pipeline “`|`” a una cantidad arbitraria de comandos simples:
+- [x] Generalizar el comando pipeline “`|`” a una cantidad arbitraria de comandos simples:
 ```bash
 scomand_1 | ... | scommand_n
 ```

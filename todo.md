@@ -8,9 +8,12 @@
     - [x] Se verifica que `scommand_pop_front` funcione correctamente, se cambia la implementación de la función
 
 - **builtin**:
-    - [ ] Agregar soporte para usar `'~'` para referirse al home en `builtin` (teniendo en cuenta el caso de que haya una carpeta cuyo nombre empiece con `~`).
+    - [x] Agregar soporte para usar `'~'` para referirse al home en `builtin` (teniendo en cuenta el caso de que haya una carpeta cuyo nombre empiece con `~`).
     En bash en el caso de que hay una carpeta cuyo nombre empieza con `~` y tiene mas letras, se puede entrar a la carpeta con `cd ~nombreDeLaCarpeta` o con `cd \~nombreDeLaCarpeta` y en caso de que la carpeta se llame `~` solo, se puede entrar con `cd \~`
-    - [ ] Explicar `change_file_descriptor_in` y `change_file_descriptor_out`.
+    - [x] Explicar `change_file_descriptor_in` y `change_file_descriptor_out`.
+
+- **execute**
+    - [x] Modificar la función execute_pipeline para que pueda ejecutar cualquier pipeline independientemente de la cantidad de comandos que tenga, ademas que no tenga problemas en ejecutarse si se combinan comandos internos con comandos externos, y que permita ejecutar los pipelines en background con el carácter &.
 
 - **prompt**:
     - [ ] Realizar el punto estrella.
