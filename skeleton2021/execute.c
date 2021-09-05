@@ -232,9 +232,7 @@ void execute_pipeline(pipeline p){
             //en background
             if (wait) {
                 waitpid(pid, &status, 0);
-            } else {
-                waitpid(pid, &status, WNOHANG);
-            }
+            } 
         }
     } else {
         //Caso en el que haya un pipeline multiple
@@ -298,9 +296,7 @@ void execute_pipeline(pipeline p){
                 //en el grupo de procesos fgLeader
                 if (wait) {
                     waitpid(pid, &status, 0);
-                } else {
-                    waitpid(pid, &status, WNOHANG);
-                }
+                } 
                 close(pipefd[1]);
                 pipeline_pop_front(p);
                 fd_in = pipefd[0];
