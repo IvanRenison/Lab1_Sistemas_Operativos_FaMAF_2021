@@ -209,6 +209,12 @@ void execute_pipeline(pipeline p){
             if (pid < 0) {
                 perror("fork: ");
                 exit(1);
+                if (bgLeader == -1 && fgLeader == -1){
+                    return;
+                } else {
+                    killpg(getpgid(pid), SIGKILL);
+                    return;
+                }
             } else if (pid == 0) {
                 //Se crea un grupo para clasificar el proceso, fgLeader en caso de 
                 //el proceso se corra en la terminal y bgLeader en caso de que se corra
@@ -222,7 +228,7 @@ void execute_pipeline(pipeline p){
                     if (bgLeader == -1) {
                         bgLeader = getpid();
                     }
-                    setpgid(getpid(), bgLeader);
+                    setpgid(getpgid(pid), bgLeader);
                 }
                 scommand_exec(pipeline_front(p));
                 _exit(1);
@@ -240,12 +246,9 @@ void execute_pipeline(pipeline p){
             int res_pipe = pipe(pipefd);
             if (res_pipe < 0) {
                 perror("pipe: ");
-                if((wait && fgLeader == -1) || (!wait && bgLeader == -1)){
+                if (bgLeader == -1 && fgLeader == -1){
                     return;
-                } else if (fgLeader != -1){
-                    killpg(getpgid(pid), SIGKILL);
-                    return;
-                } else if (bgLeader != -1){
+                } else {
                     killpg(getpgid(pid), SIGKILL);
                     return;
                 }
@@ -254,6 +257,12 @@ void execute_pipeline(pipeline p){
                 if (pid  == -1) {
                     perror("fork: ");
                     exit(1);
+                    if (bgLeader == -1 && fgLeader == -1){
+                        return;
+                    } else {
+                        killpg(getpgid(pid), SIGKILL);
+                        return;
+                    }
                 } else if (pid == 0) {
 
                     int res_dup = dup2(fd_in, STDIN_FILENO);
