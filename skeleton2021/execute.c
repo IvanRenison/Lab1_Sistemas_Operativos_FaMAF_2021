@@ -39,14 +39,14 @@ static int change_file_descriptor_in(scommand cmd) {
         if (dup2_res == -1) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
             // Si lo hace, dup2 seetea el mensaje de perror
-            perror("");
+            perror("dup2");
             return (-1);
         }
 
         int res_close = close(file_redir_in);
         if (res_close == -1) {
             // No debería fallar, PERO si falla...
-            perror("");
+            perror("dup2");
             return (-1);
         }
     }
@@ -94,14 +94,14 @@ static int change_file_descriptor_out(scommand cmd) {
         if (dup2_res == -1) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
             // Si lo hace, dup2 seetea el mensaje de perror
-            perror("");
+            perror("dup2");
             return (-1);
         }
 
         int res_close = close(file_redir_out);
         if (res_close == -1) {
             // No debería fallar, PERO si falla...
-            perror("");
+            perror("close");
             return (-1);
         }
     }
@@ -190,7 +190,7 @@ static void single_command(pipeline p){
         //Caso en el que el comando es externo y se debe hacer fork()
         pid = fork();
         if (pid < 0) {
-            perror("fork: ");
+            perror("fork");
             return;
         } else if (pid == 0) {
             scommand_exec(pipeline_front(p));
@@ -216,7 +216,7 @@ static void multiple_commands(pipeline p){
     while (!pipeline_is_empty(p)) {
         int res_pipe = pipe(pipefd);
         if (res_pipe < 0) {
-            perror("pipe: ");
+            perror("pipe");
             while(child_processes_running > 0){
                 wait(NULL);
                 child_processes_running--;
@@ -225,7 +225,7 @@ static void multiple_commands(pipeline p){
         } else {
             pid = fork();
             if (pid  == -1) {
-                perror("fork: ");
+                perror("fork");
                 while(child_processes_running > 0){
                     wait(NULL);
                     child_processes_running--;
@@ -235,16 +235,16 @@ static void multiple_commands(pipeline p){
 
                 int res_dup = dup2(fd_in, STDIN_FILENO);
                 if(res_dup < 0){
-                    perror("dup2: ");
+                    perror("dup2");
                     _exit(1);
                 }  
 
                 //Si el comando no es el ultimo se coloca la salida del pipe
-                //en el stdout 
+                //en el stdout
                 if(pipeline_length(p) > 1){
                     res_dup = dup2(pipefd[1], STDOUT_FILENO);
                     if(res_dup < 0){
-                        perror("dup2: ");
+                        perror("dup2");
                         _exit(1);
                     }
                 }
