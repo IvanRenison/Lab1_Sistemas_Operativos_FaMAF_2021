@@ -259,9 +259,6 @@ static void multiple_commands(pipeline apipe) {
                 scommand_exec(pipeline_front(apipe));
                 _exit(1);
             }
-            //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
-            //& en el pipeline, en este caso va a esperar a todos los procesos que van a estar
-            //en el grupo de procesos fgLeader
             close(pipefd[1]);
             pipeline_pop_front(apipe);
             fd_in = pipefd[0];
@@ -269,6 +266,8 @@ static void multiple_commands(pipeline apipe) {
         }
     }
     close(pipefd[0]);
+    //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
+    //& en el pipeline
     if (foreground) {
         waitpid(pid, NULL, 0);
     } 
