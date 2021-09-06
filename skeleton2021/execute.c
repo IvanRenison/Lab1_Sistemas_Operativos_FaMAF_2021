@@ -178,27 +178,30 @@ static int scommand_exec(scommand cmd) {
     return (ret_code);
 }
 
-static void single_command(pipeline p){
-    pid_t pid;
-    bool foreground = pipeline_get_wait(p);
+/* Ejecuta un pipeline de un solo comando tanto si es interno como si es externo
+ * en caso de ser externo hace fork pero en caso de ser interno no
+ *
+ * Requires: apipe != NULL && pipeline_length(apipe) == 1
+ */
+static void single_command(pipeline apipe) {
+    assert(apipe != NULL && pipeline_length(apipe) == 1);
 
-
-    //Caso en el que comando es interno 
-    if (builtin_scommand_is_single_internal(p)) {
-        builtin_single_pipeline_exec(p);
+    if (builtin_scommand_is_single_internal(apipe)) {
+        // Caso en el que comando es interno 
+        builtin_single_pipeline_exec(apipe);
     } else {
         //Caso en el que el comando es externo y se debe hacer fork()
-        pid = fork();
+        pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
             return;
         } else if (pid == 0) {
-            scommand_exec(pipeline_front(p));
+            scommand_exec(pipeline_front(apipe));
             _exit(1);
         }
-        //El proceso padre solo espera a los hijos en caso de que no se indique el caracter
-        // & en el pipeline
-        if (foreground) {
+        // El proceso padre solo espera a los hijos en caso de que no se indique el caracter
+        // & en el pipeline (osea, cuando está seeteado para que espere)
+        if (pipeline_get_wait(apipe)) {
             waitpid(pid, NULL, 0);
         } 
     }
