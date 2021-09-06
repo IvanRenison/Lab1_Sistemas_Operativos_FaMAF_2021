@@ -163,15 +163,15 @@ static int scommand_exec_external(scommand cmd) {
  * En caso de fallar la llamada al programa, los descriptores de archivo pueden quedar
  * cambiados por los de redirección de entrada y de salida
  *
- * Requires: cmd != NULL && !scommand_is_empty(cmd)
+ * Requires: cmd != NULL
  */
 static int scommand_exec(scommand cmd) {
-    assert(cmd != NULL && !scommand_is_empty(cmd));
+    assert(cmd != NULL);
     int ret_code = 0;
     if (builtin_scommand_is_internal(cmd)) {
         builtin_scommand_exec(cmd);
         ret_code = 0;
-    } else {
+    } else if (!scommand_is_empty(cmd)) {
         scommand_exec_external(cmd);
     }
 
