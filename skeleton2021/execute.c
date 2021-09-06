@@ -205,67 +205,82 @@ static void single_command(pipeline p){
 }
 
 static void multiple_commands(pipeline p){
-    int pipefd[2];
-    int fd_in = STDIN_FILENO;
     pid_t pid;
-    bool foreground = pipeline_get_wait(p);
     int child_processes_running = 0;
-    
+    int res_pipe;
+    int res_dup;
+    int numberOfPipes = pipeline_length(p) - 1;
+    bool foreground = pipeline_get_wait(p);
+    // Se asigna la cantidad de memoria necesaria para todos los pipes
+    int * pipesfd = calloc(2 * numberOfPipes, sizeof(int));
 
-//Caso en el que haya un pipeline multiple
-    while (!pipeline_is_empty(p)) {
-        int res_pipe = pipe(pipefd);
-        if (res_pipe < 0) {
+    // Se abren todos los pipes que se van a necesitar para la ejecucion
+    for(int i = 0; i < numberOfPipes; i++){
+        res_pipe = pipe(pipesfd + i * 2);
+        if(res_pipe < 0){
             perror("pipe: ");
-            while(child_processes_running > 0){
-                wait(NULL);
-                child_processes_running--;
-            }
             return;
-        } else {
-            pid = fork();
-            if (pid  == -1) {
-                perror("fork: ");
-                while(child_processes_running > 0){
-                    wait(NULL);
-                    child_processes_running--;
-                }
-                return;
-            } else if (pid == 0) {
-
-                int res_dup = dup2(fd_in, STDIN_FILENO);
-                if(res_dup < 0){
-                    perror("dup2: ");
-                    _exit(1);
-                }  
-
-                //Si el comando no es el ultimo se coloca la salida del pipe
-                //en el stdout 
-                if(pipeline_length(p) > 1){
-                    res_dup = dup2(pipefd[1], STDOUT_FILENO);
-                    if(res_dup < 0){
-                        perror("dup2: ");
-                        _exit(1);
-                    }
-                }
-
-                close(pipefd[0]);
-                close(pipefd[1]);
-                scommand_exec(pipeline_front(p));
-                _exit(1);
-            }
-            close(pipefd[1]);
-            pipeline_pop_front(p);
-            fd_in = pipefd[0];
-            child_processes_running++;
         }
     }
-    close(pipefd[0]);
-    //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
-    //& en el pipeline
+    
+    int j = 0;
+    // Caso en el que haya un pipeline multiple
+    while(!pipeline_is_empty(p)) {
+        pid = fork();
+        if(pid == 0) {
+
+            //Si no es el ultimo comando
+            if(pipeline_length(p)> 1){
+                res_dup = dup2(pipesfd[j + 1], 1);
+                if(res_dup < 0){
+                    perror("dup2");
+                    _exit(1);
+                }
+            }
+
+            //Si no es el primer comando
+            if(j != 0){
+                res_dup = dup2(pipesfd[j-2], 0);
+                if(res_dup < 0){
+                    perror(" dup2");
+                    _exit(1);
+                }
+            }
+
+            //Se cierran todos los file descriptors
+            for(int i = 0; i < 2*numberOfPipes; i++){
+                    close(pipesfd[i]);
+            }
+
+            scommand_exec(pipeline_front(p));
+            _exit(1);
+        } else if(pid < 0){
+            perror("error");
+            // Si falla el fork se espera a los procesos hijos que se estan ejecutando y
+            // se hace un return
+            while(child_processes_running > 0){
+                wait(NULL);
+            }
+            return;
+        }
+        pipeline_pop_front(p);
+        j += 2;
+        child_processes_running++;
+    }
+
+    // El proceso padre cierra los file descriptors y espera a los hijos en caso
+    // que pipeline_get_wait(p) = True
+    for(int i = 0; i < 2 * numberOfPipes; i++){
+        close(pipesfd[i]);
+    }
+
+    // Se libera la memoria asignada
+    free(pipesfd);
+
     if (foreground) {
-        waitpid(pid, NULL, 0);
-    } 
+        for(int i = 0; i < numberOfPipes + 1; i++)
+            wait(NULL);
+    }
 }
 
 
