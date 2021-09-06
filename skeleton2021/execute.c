@@ -212,30 +212,22 @@ static void multiple_commands(pipeline apipe) {
 
     int pipefd[2];
     int fd_in = STDIN_FILENO;
-    pid_t pid;
-    bool foreground = pipeline_get_wait(apipe);
     int child_processes_running = 0;
     
+    bool error_flag = false;
+    // Variable para volver true si hay un error
 
-    //Caso en el que haya un pipeline multiple
-    while (!pipeline_is_empty(apipe)) {
+    // Caso en el que haya un pipeline multiple
+    while (!error_flag && !pipeline_is_empty(apipe)) {
         int res_pipe = pipe(pipefd);
         if (res_pipe < 0) {
             perror("pipe");
-            while(child_processes_running > 0){
-                wait(NULL);
-                child_processes_running--;
-            }
-            return;
+            error_flag = true;
         } else {
-            pid = fork();
+            pid_t pid = fork();
             if (pid  == -1) {
                 perror("fork");
-                while(child_processes_running > 0){
-                    wait(NULL);
-                    child_processes_running--;
-                }
-                return;
+                error_flag = true;
             } else if (pid == 0) {
 
                 int res_dup = dup2(fd_in, STDIN_FILENO);
@@ -244,8 +236,8 @@ static void multiple_commands(pipeline apipe) {
                     _exit(1);
                 }  
 
-                //Si el comando no es el ultimo se coloca la salida del pipe
-                //en el stdout
+                // Si el comando no es el ultimo se coloca la salida del pipe
+                // en el stdout
                 if(pipeline_length(apipe) > 1){
                     res_dup = dup2(pipefd[1], STDOUT_FILENO);
                     if(res_dup < 0){
@@ -266,10 +258,13 @@ static void multiple_commands(pipeline apipe) {
         }
     }
     close(pipefd[0]);
-    //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
-    //& en el pipeline
-    if (foreground) {
-        waitpid(pid, NULL, 0);
+    // El proceso padre solo va a esperar en caso de que no se encuentre el caracter
+    // & en el pipeline
+    if (pipeline_get_wait(apipe)) {
+        while(child_processes_running > 0) {
+            wait(NULL);
+            child_processes_running--;
+        }
     } 
 }
 
