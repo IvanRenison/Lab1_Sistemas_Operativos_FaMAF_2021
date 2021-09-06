@@ -207,16 +207,18 @@ static void single_command(pipeline apipe) {
     }
 }
 
-static void multiple_commands(pipeline p){
+static void multiple_commands(pipeline apipe) {
+    assert(apipe != NULL && pipeline_length(apipe) >= 2);
+
     int pipefd[2];
     int fd_in = STDIN_FILENO;
     pid_t pid;
-    bool foreground = pipeline_get_wait(p);
+    bool foreground = pipeline_get_wait(apipe);
     int child_processes_running = 0;
     
 
-//Caso en el que haya un pipeline multiple
-    while (!pipeline_is_empty(p)) {
+    //Caso en el que haya un pipeline multiple
+    while (!pipeline_is_empty(apipe)) {
         int res_pipe = pipe(pipefd);
         if (res_pipe < 0) {
             perror("pipe");
@@ -244,7 +246,7 @@ static void multiple_commands(pipeline p){
 
                 //Si el comando no es el ultimo se coloca la salida del pipe
                 //en el stdout
-                if(pipeline_length(p) > 1){
+                if(pipeline_length(apipe) > 1){
                     res_dup = dup2(pipefd[1], STDOUT_FILENO);
                     if(res_dup < 0){
                         perror("dup2");
@@ -254,14 +256,14 @@ static void multiple_commands(pipeline p){
 
                 close(pipefd[0]);
                 close(pipefd[1]);
-                scommand_exec(pipeline_front(p));
+                scommand_exec(pipeline_front(apipe));
                 _exit(1);
             }
             //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
             //& en el pipeline, en este caso va a esperar a todos los procesos que van a estar
             //en el grupo de procesos fgLeader
             close(pipefd[1]);
-            pipeline_pop_front(p);
+            pipeline_pop_front(apipe);
             fd_in = pipefd[0];
             child_processes_running++;
         }
