@@ -207,6 +207,16 @@ static void single_command(pipeline apipe) {
     }
 }
 
+/* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
+ * (incluso para los internos) y si está seeteado para que espere, espera a que terminen
+ * 
+ * Puede modificar apipe pero no destruirlo, en caso de que no haya ningún error,
+ * deja vacio a apipe
+ *
+ * Requires: apipe != NULL && pipeline_length(apipe) >= 2
+ * 
+ * Ensures: apipe != NULL
+ */
 static void multiple_commands(pipeline apipe) {
     assert(apipe != NULL && pipeline_length(apipe) >= 2);
 
@@ -217,18 +227,20 @@ static void multiple_commands(pipeline apipe) {
     bool error_flag = false;
     // Variable para volver true si hay un error
 
-    // Caso en el que haya un pipeline multiple
+    // Caso en el que haya un pipeline multiple 
     while (!error_flag && !pipeline_is_empty(apipe)) {
         int res_pipe = pipe(pipefd);
         if (res_pipe < 0) {
             perror("pipe");
             error_flag = true;
-        } else {
+        }
+        else {
             pid_t pid = fork();
             if (pid  == -1) {
                 perror("fork");
                 error_flag = true;
-            } else if (pid == 0) {
+            }
+            else if (pid == 0) {
 
                 int res_dup = dup2(fd_in, STDIN_FILENO);
                 if(res_dup < 0){
@@ -238,9 +250,9 @@ static void multiple_commands(pipeline apipe) {
 
                 // Si el comando no es el ultimo se coloca la salida del pipe
                 // en el stdout
-                if(pipeline_length(apipe) > 1){
+                if(pipeline_length(apipe) > 1) {
                     res_dup = dup2(pipefd[1], STDOUT_FILENO);
-                    if(res_dup < 0){
+                    if (res_dup < 0) {
                         perror("dup2");
                         _exit(1);
                     }
@@ -249,15 +261,18 @@ static void multiple_commands(pipeline apipe) {
                 close(pipefd[0]);
                 close(pipefd[1]);
                 scommand_exec(pipeline_front(apipe));
+                /* En caso de el el comando haya sido interno, o haya habido un fallo,
+                   se termina la ejecución del hijo */
                 _exit(1);
             }
             close(pipefd[1]);
-            pipeline_pop_front(apipe);
             fd_in = pipefd[0];
+            pipeline_pop_front(apipe);
             child_processes_running++;
         }
     }
     close(pipefd[0]);
+
     // El proceso padre solo va a esperar en caso de que no se encuentre el caracter
     // & en el pipeline
     if (pipeline_get_wait(apipe)) {
