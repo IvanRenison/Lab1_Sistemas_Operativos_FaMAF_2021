@@ -207,6 +207,22 @@ static void single_command(pipeline apipe) {
     }
 }
 
+/* Como dup2, solo que ademas (si oldfd == newfd no hace nada y retorna newfd)
+ * cierra oldfd y en caso de fallo, imprime un mensaje de error
+ */
+static int dup2_extra(int oldfd, int newfd) {
+    if (oldfd != newfd) {
+        newfd = dup2(oldfd, newfd);
+        if (newfd < 0) {
+            // En caso de que dup2 falle se hace que perror imprima el mensaje de error
+            perror("dup2:");
+        }
+        close(oldfd);
+    }
+
+    return (newfd);
+}
+
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
  * (incluso para los internos) y si está seeteado para que espere, espera a que terminen
  * 
@@ -242,9 +258,8 @@ static void multiple_commands(pipeline apipe) {
             }
             else if (pid == 0) {
 
-                int res_dup = dup2(fd_in, STDIN_FILENO);
+                int res_dup = dup2_extra(fd_in, STDIN_FILENO);
                 if(res_dup < 0){
-                    perror("dup2");
                     _exit(1);
                 }  
 
@@ -257,7 +272,7 @@ static void multiple_commands(pipeline apipe) {
                         _exit(1);
                     }
                 }
-                close(fd_in);
+
                 close(pipefd[0]);
                 close(pipefd[1]);
                 scommand_exec(pipeline_front(apipe));
