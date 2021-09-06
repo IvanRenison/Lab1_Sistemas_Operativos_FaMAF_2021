@@ -292,7 +292,6 @@ void execute_pipeline(pipeline p){
 
 void zombie_handler(){
     pid_t pid;
-    int status;
     for (pid = waitpid(-1 ,NULL,WNOHANG);
              pid != 0 && pid != -1;
              pid = waitpid(-1,NULL,WNOHANG)){
