@@ -119,8 +119,7 @@ static int change_file_descriptor_out(scommand cmd) {
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
  *
  */
-int scommand_exec_external(scommand cmd);
-int scommand_exec_external(scommand cmd) {
+static int scommand_exec_external(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
     // Se cambia stdin por el archivo de redirección de entrada, si es que está seeteado
