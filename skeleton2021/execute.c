@@ -182,9 +182,8 @@ static int scommand_exec(scommand cmd) {
 static void single_command(pipeline p){
     int status;
     pid_t pid;
-    pid_t fgLeader = -1;
-    pid_t bgLeader = -1;
-    bool wait = pipeline_get_wait(p);
+    bool foreground = pipeline_get_wait(p);
+
 
     //Caso en el que comando es interno 
     if (builtin_scommand_is_single_internal(p)) {
@@ -196,27 +195,12 @@ static void single_command(pipeline p){
             perror("fork: ");
             return;
         } else if (pid == 0) {
-            //Se crea un grupo para clasificar el proceso, fgLeader en caso de 
-            //el proceso se corra en la terminal y bgLeader en caso de que se corra
-            //en background con &
-            if (wait) {
-                if (fgLeader == -1) {
-                    fgLeader = getpid();
-                }
-                setpgid(getpid(), fgLeader);
-            } else {
-                if (bgLeader == -1) {
-                    bgLeader = getpid();
-                }
-                setpgid(getpgid(pid), bgLeader);
-            }
             scommand_exec(pipeline_front(p));
             _exit(1);
         }
-        //El proceso padre solo espera al conjunto de procesos en fgLeader si en el 
-        //pipeline no se encuentra el caracter & que indica que el proceso se corre
-        //en background
-        if (wait) {
+        //El proceso padre solo espera a los hijos en caso de que no se indique el caracter
+        // & en el pipeline
+        if (foreground) {
             waitpid(pid, &status, 0);
         } 
     }
@@ -227,31 +211,29 @@ static void multiple_commands(pipeline p){
     int pipefd[2];
     int fd_in = STDIN_FILENO;
     pid_t pid;
-    pid_t fgLeader = -1;
-    pid_t bgLeader = -1;
-    bool wait = pipeline_get_wait(p);
+    bool foreground = pipeline_get_wait(p);
+    int child_processes_running = 0;
+    
 
 //Caso en el que haya un pipeline multiple
     while (!pipeline_is_empty(p)) {
         int res_pipe = pipe(pipefd);
         if (res_pipe < 0) {
             perror("pipe: ");
-            if (bgLeader == -1 && fgLeader == -1){
-                return;
-            } else {
-                killpg(getpgid(pid), SIGKILL);
-                return;
+            while(child_processes_running > 0){
+                wait(&status);
+                child_processes_running--;
             }
+            return;
         } else {
             pid = fork();
             if (pid  == -1) {
                 perror("fork: ");
-                if (bgLeader == -1 && fgLeader == -1){
-                    return;
-                } else {
-                    killpg(getpgid(pid), SIGKILL);
-                    return;
+                while(child_processes_running > 0){
+                    wait(&status);
+                    child_processes_running--;
                 }
+                return;
             } else if (pid == 0) {
 
                 int res_dup = dup2(fd_in, STDIN_FILENO);
@@ -270,20 +252,6 @@ static void multiple_commands(pipeline p){
                     }
                 }
 
-                //Se clasifican los procesos en grupos para despues poder saber para
-                //cuales procesos debe esperar el proceso padre
-                if (wait) {
-                    if (fgLeader == -1) {
-                        fgLeader = getpid();
-                    }
-                    setpgid(getpid(), fgLeader);
-                } else {
-                    if (bgLeader == -1) {
-                        bgLeader = getpid();
-                    }
-                    setpgid(getpid(), bgLeader);
-                }
-
                 close(pipefd[0]);
                 close(pipefd[1]);
                 scommand_exec(pipeline_front(p));
@@ -292,15 +260,16 @@ static void multiple_commands(pipeline p){
             //El proceso padre solo va a esperar en caso de que no se encuentre el caracter
             //& en el pipeline, en este caso va a esperar a todos los procesos que van a estar
             //en el grupo de procesos fgLeader
-            if (wait) {
-                waitpid(pid, &status, 0);
-            } 
             close(pipefd[1]);
             pipeline_pop_front(p);
             fd_in = pipefd[0];
+            child_processes_running++;
         }
     }
     close(pipefd[0]);
+    if (foreground) {
+        waitpid(pid, &status, 0);
+    } 
 }
 
 
@@ -314,8 +283,8 @@ static void multiple_commands(pipeline p){
 */
 void execute_pipeline(pipeline p){
     int numberOfPipes = pipeline_length(p) - 1;
-
     //Caso en el que el pipe solo tiene un comando
+    zombie_handler();
     if (numberOfPipes == 0) {
         single_command(p);
     } else {
@@ -324,9 +293,11 @@ void execute_pipeline(pipeline p){
 }
 
 void zombie_handler(){
-    for (pid_t pid = waitpid(-1 ,NULL,WNOHANG);
+    pid_t pid;
+    int status;
+    for (pid = waitpid(-1 ,&status,WNOHANG);
              pid != 0 && pid != -1;
-             pid = waitpid(-1,NULL,WNOHANG)){
-                 wait(NULL);
+             pid = waitpid(-1,&status,WNOHANG)){
+                 wait(&status);
     }
 }
