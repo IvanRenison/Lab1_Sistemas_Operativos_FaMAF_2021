@@ -223,6 +223,7 @@ static void multiple_commands(pipeline apipe) {
     int pipefd[2];
     int fd_in = STDIN_FILENO;
     int child_processes_running = 0;
+    int x = 0; // Probisorio
     
     bool error_flag = false;
     // Variable para volver true si hay un error
@@ -257,7 +258,7 @@ static void multiple_commands(pipeline apipe) {
                         _exit(1);
                     }
                 }
-
+                close(fd_in);
                 close(pipefd[0]);
                 close(pipefd[1]);
                 scommand_exec(pipeline_front(apipe));
@@ -265,6 +266,12 @@ static void multiple_commands(pipeline apipe) {
                    se termina la ejecución del hijo */
                 _exit(1);
             }
+            if (x != 0) {
+                close(fd_in);
+                // Esto es para no hacer close(fd_in); en el primer siclo del while
+                // y si en el resto, pero es algo probisorio
+            }
+            x = 1; // Probisorio
             close(pipefd[1]);
             fd_in = pipefd[0];
             pipeline_pop_front(apipe);
