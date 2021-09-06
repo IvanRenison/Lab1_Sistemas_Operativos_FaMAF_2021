@@ -204,13 +204,13 @@ static void single_command(pipeline p){
     }
 }
 
-static void multiple_commands(pipeline p){
+static void multiple_commands(pipeline apipe){
     pid_t pid;
     int child_processes_running = 0;
     int res_pipe;
     int res_dup;
-    int numberOfPipes = pipeline_length(p) - 1;
-    bool foreground = pipeline_get_wait(p);
+    int numberOfPipes = pipeline_length(apipe) - 1;
+    bool foreground = pipeline_get_wait(apipe);
     // Se asigna la cantidad de memoria necesaria para todos los pipes
     int * pipesfd = calloc(2 * numberOfPipes, sizeof(int));
 
@@ -225,12 +225,12 @@ static void multiple_commands(pipeline p){
     
     int j = 0;
     // Caso en el que haya un pipeline multiple
-    while(!pipeline_is_empty(p)) {
+    while(!pipeline_is_empty(apipe)) {
         pid = fork();
         if(pid == 0) {
 
             //Si no es el ultimo comando
-            if(pipeline_length(p)> 1){
+            if(pipeline_length(apipe)> 1){
                 res_dup = dup2(pipesfd[j + 1], 1);
                 if(res_dup < 0){
                     perror("dup2");
@@ -252,7 +252,7 @@ static void multiple_commands(pipeline p){
                     close(pipesfd[i]);
             }
 
-            scommand_exec(pipeline_front(p));
+            scommand_exec(pipeline_front(apipe));
             _exit(1);
         } else if(pid < 0){
             perror("error");
@@ -263,7 +263,7 @@ static void multiple_commands(pipeline p){
             }
             return;
         }
-        pipeline_pop_front(p);
+        pipeline_pop_front(apipe);
         j += 2;
         child_processes_running++;
     }
