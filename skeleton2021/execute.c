@@ -180,7 +180,6 @@ static int scommand_exec(scommand cmd) {
 }
 
 static void single_command(pipeline p){
-    int status;
     pid_t pid;
     bool foreground = pipeline_get_wait(p);
 
@@ -201,13 +200,12 @@ static void single_command(pipeline p){
         //El proceso padre solo espera a los hijos en caso de que no se indique el caracter
         // & en el pipeline
         if (foreground) {
-            waitpid(pid, &status, 0);
+            waitpid(pid, NULL, 0);
         } 
     }
 }
 
 static void multiple_commands(pipeline p){
-    int status;
     int pipefd[2];
     int fd_in = STDIN_FILENO;
     pid_t pid;
@@ -221,7 +219,7 @@ static void multiple_commands(pipeline p){
         if (res_pipe < 0) {
             perror("pipe: ");
             while(child_processes_running > 0){
-                wait(&status);
+                wait(NULL);
                 child_processes_running--;
             }
             return;
@@ -230,7 +228,7 @@ static void multiple_commands(pipeline p){
             if (pid  == -1) {
                 perror("fork: ");
                 while(child_processes_running > 0){
-                    wait(&status);
+                    wait(NULL);
                     child_processes_running--;
                 }
                 return;
@@ -268,7 +266,7 @@ static void multiple_commands(pipeline p){
     }
     close(pipefd[0]);
     if (foreground) {
-        waitpid(pid, &status, 0);
+        waitpid(pid, NULL, 0);
     } 
 }
 
@@ -295,9 +293,9 @@ void execute_pipeline(pipeline p){
 void zombie_handler(){
     pid_t pid;
     int status;
-    for (pid = waitpid(-1 ,&status,WNOHANG);
+    for (pid = waitpid(-1 ,NULL,WNOHANG);
              pid != 0 && pid != -1;
-             pid = waitpid(-1,&status,WNOHANG)){
-                 wait(&status);
+             pid = waitpid(-1,NULL,WNOHANG)){
+                 wait(NULL);
     }
 }
