@@ -210,7 +210,7 @@ static void single_command(pipeline apipe) {
 /* Como dup2, solo que ademas (si oldfd == newfd no hace nada y retorna newfd)
  * cierra oldfd y en caso de fallo, imprime un mensaje de error
  */
-static int dup2_extra(int oldfd, int newfd) {
+/* static int dup2_extra(int oldfd, int newfd) {
     if (oldfd != newfd) {
         newfd = dup2(oldfd, newfd);
         if (newfd < 0) {
@@ -221,7 +221,7 @@ static int dup2_extra(int oldfd, int newfd) {
     }
 
     return (newfd);
-}
+} */
 
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
  * (incluso para los internos) y si está seeteado para que espere, espera a que terminen
@@ -234,76 +234,92 @@ static int dup2_extra(int oldfd, int newfd) {
  * Ensures: apipe != NULL
  */
 static void multiple_commands(pipeline apipe) {
+
     assert(apipe != NULL && pipeline_length(apipe) >= 2);
-
-    int pipefd[2];
-    int fd_in = STDIN_FILENO;
+    pid_t pid;
     int child_processes_running = 0;
-    
+    int res_pipe;
+    int res_dup;
+    int numberOfPipes = pipeline_length(apipe) - 1;
+    bool foreground = pipeline_get_wait(apipe);
     bool error_flag = false;
-    // Variable para volver true si hay un error
+    // Se asigna la cantidad de memoria necesaria para todos los pipes
+    int * pipesfd = calloc(2 * numberOfPipes, sizeof(int));
 
-    // Caso en el que haya un pipeline multiple 
-    while (!error_flag && !pipeline_is_empty(apipe)) {
-        int res_pipe = pipe(pipefd);
-        if (res_pipe < 0) {
-            perror("pipe");
-            error_flag = true;
-        }
-        else {
-            pid_t pid = fork();
-            if (pid  == -1) {
-                perror("fork");
-                error_flag = true;
+    // Se abren todos los pipes que se van a necesitar para la ejecucion
+    for(int i = 0; i < numberOfPipes; i++){
+        res_pipe = pipe(pipesfd + i * 2);
+        if(res_pipe < 0){
+            perror("pipe: ");
+            //se libera la memoria
+            free(pipesfd);
+            //se cierran los pipes que ya se abrieron
+            for(int j = 0; j < 2 * i; j++){
+                close(pipesfd[j]);
             }
-            else if (pid == 0) {
-
-                int res_dup = dup2_extra(fd_in, STDIN_FILENO);
-                if(res_dup < 0){
-                    _exit(1);
-                }  
-
-                // Si el comando no es el ultimo se coloca la salida del pipe
-                // en el stdout
-                if(pipeline_length(apipe) > 1) {
-                    res_dup = dup2(pipefd[1], STDOUT_FILENO);
-                    if (res_dup < 0) {
-                        perror("dup2");
-                        _exit(1);
-                    }
-                }
-
-                close(pipefd[0]);
-                close(pipefd[1]);
-                scommand_exec(pipeline_front(apipe));
-                /* En caso de el el comando haya sido interno, o haya habido un fallo,
-                   se termina la ejecución del hijo */
-                _exit(1);
-            }
-            child_processes_running++;
-            
-            if (child_processes_running > 1) {
-                // Esto se ejecuta siempre salvo en el primer siclo del while 
-                /* En el primer siclo de while no hay que cerrar fd_in porque 
-                   es el stdin, en el resto es la punta de lectura del pipe */
-                close(fd_in);
-            }
-
-            close(pipefd[1]);
-            fd_in = pipefd[0];
-            pipeline_pop_front(apipe);
+            return;
         }
     }
-    close(pipefd[0]);
+    
+    int j = 0;
+    // Caso en el que haya un pipeline multiple
+    while(!pipeline_is_empty(apipe) && !error_flag) {
+        pid = fork();
+        if(pid == 0) {
 
-    // El proceso padre solo va a esperar en caso de que no se encuentre el caracter
-    // & en el pipeline
-    if (pipeline_get_wait(apipe)) {
-        while(child_processes_running > 0) {
-            wait(NULL);
-            child_processes_running--;
+            //Si no es el ultimo comando
+            if(pipeline_length(apipe)> 1){
+                res_dup = dup2(pipesfd[j + 1], 1);
+                if(res_dup < 0){
+                    perror("dup2");
+                    _exit(1);
+                }
+            }
+
+            //Si no es el primer comando
+            if(j != 0){
+                res_dup = dup2(pipesfd[j-2], 0);
+                if(res_dup < 0){
+                    perror(" dup2");
+                    _exit(1);
+                }
+            }
+
+            //Se cierran todos los file descriptors
+            for(int i = 0; i < 2*numberOfPipes; i++){
+                    close(pipesfd[i]);
+            }
+
+            scommand_exec(pipeline_front(apipe));
+            _exit(1);
+        } else if(pid > 0){
+            //El padre elimina un comando del pipe y aumenta el contador de procesos hijos
+            //ejecutandose
+            pipeline_pop_front(apipe);
+            j += 2;
+            child_processes_running++;
+        } else {
+            //Caso de que el fork falle
+            perror("error");
+            //Si el fork falla se sale del ciclo para liberar la memoria y esperar a los
+            //hijos que ya se ejecutaron
+            error_flag = true;
         }
-    } 
+    }
+
+    // El proceso padre cierra los file descriptors y espera a los hijos en caso
+    // que pipeline_get_wait(p) = True
+    for(int i = 0; i < 2 * numberOfPipes; i++){
+        close(pipesfd[i]);
+    }
+
+    // Se libera la memoria asignada
+    free(pipesfd);
+
+    if (foreground) {
+        for(int i = 0; i < child_processes_running; i++)
+            wait(NULL);
+    }
 }
 
 
