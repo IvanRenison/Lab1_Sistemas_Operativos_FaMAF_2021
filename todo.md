@@ -14,6 +14,8 @@
 
 - **execute**
     - [x] Modificar la función execute_pipeline para que pueda ejecutar cualquier pipeline independientemente de la cantidad de comandos que tenga, ademas que no tenga problemas en ejecutarse si se combinan comandos internos con comandos externos, y que permita ejecutar los pipelines en background con el carácter &.
+    - [x] Modificar la función execute_pipeline para que no queden procesos zombies al correrse pipelines en modo background.
+    - [x] Modificar la funcion execute_pipeline para que no ocurra una funcion de input si se manda la misma al background, por ejemplo `wc &`.
 
 - **prompt**:
     - [ ] Realizar el punto estrella.

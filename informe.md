@@ -44,7 +44,7 @@ make
 ```
 
 ```bash
-gcc test_main.c command.o strextra.o `pkg-config --cflags --libs glib`
+gcc test_main.c command.o strextra.o `pkg-config --cflags --libs glib-2.0`
 ```
 
 ```bash

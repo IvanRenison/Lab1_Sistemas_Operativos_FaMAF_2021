@@ -10,7 +10,7 @@
 #include "command.h"
 #include "execute.h"
 
-/* Pone, si existe, el archivo de redireción de entrada en el stdin,
+/* Pone, si existe, el archivo de redirección de entrada en el stdin,
  * si no existe no hace nada
  * Returns: 0 si la operación fue exitosa
  *          1 si la operación falló
@@ -178,8 +178,8 @@ static int scommand_exec(scommand cmd) {
 }
 
 /* Ejecuta un pipeline de un solo comando tanto si es interno como si es externo
- * en caso de ser externo hace fork pero en caso de ser interno no y
- * retorna la cantidad de hijos creados (0 o 1)
+ * en caso de ser externo hace fork pero en caso de ser interno no.
+ * Retorna la cantidad de hijos creados (0 o 1)
  *
  * Requires: apipe != NULL && pipeline_length(apipe) == 1
  */
@@ -210,21 +210,6 @@ static unsigned int single_command(pipeline apipe) {
     return child_processes_running;
 }
 
-/* Como dup2, solo que ademas (si oldfd == newfd no hace nada y retorna newfd)
- * cierra oldfd y en caso de fallo, imprime un mensaje de error
- */
-static int dup2_extra(int oldfd, int newfd) {
-    if (oldfd != newfd) {
-        newfd = dup2(oldfd, newfd);
-        if (newfd < 0) {
-            // En caso de que dup2 falle se hace que perror imprima el mensaje de error
-            perror("dup2:");
-        }
-        close(oldfd);
-    }
-
-    return (newfd);
-}
 
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
  * (incluso para los internos) y retorna la cantidad de hijos creados
@@ -278,16 +263,18 @@ static unsigned int multiple_commands(pipeline apipe) {
 
             //Si no es el ultimo comando
             if (pipeline_length(apipe) > 1) {
-                int res_dup = dup2_extra(pipesfd[j + 1], 1);
+                int res_dup = dup2(pipesfd[j + 1], STDOUT_FILENO);
                 if (res_dup < 0) {
+                    perror("dup ");
                     _exit(1);
                 }
             }
 
             //Si no es el primer comando
             if (j != 0) {
-                int res_dup = dup2_extra(pipesfd[j - 2], 0);
+                int res_dup = dup2(pipesfd[j - 2], STDIN_FILENO);
                 if (res_dup < 0) {
+                    perror("dup ");
                     _exit(1);
                 }
             }
@@ -349,6 +336,16 @@ static unsigned int execute_pipeline_foreground(pipeline apipe) {
     return child_processes_running;
 }
 
+/* Ejecuta los pipelines haciendo llamadas a las diferentes funciones
+ * que ejecutan pipelines simples, en el caso de que un pipeline tenga comandos 
+ * multiples y se ejcute en background hace un fork y una llamada a 
+ * execute_pipeline_foreground, de esta forma los procesos que ejecutan los comandos 
+ * son hijos del hijo, de esta forma podemos hacer que el proceso hijo haga exit para que
+ * no espere a los hijos y de esta forma se corran los procesos en background, y ademas
+ * quedan sus hijos como huerfanos por lo que el proceso padre se encarga de recogerlos, 
+ * de esta manera evitamos los procesos zombies.    
+*/
+
 void execute_pipeline(pipeline p) {
     assert(p != NULL);
 
@@ -384,11 +381,12 @@ void execute_pipeline(pipeline p) {
 
             close(punta_escritura);
 
-            int res_dup2 = dup2_extra(punta_lectura, STDIN_FILENO);
+            int res_dup2 = dup2(punta_lectura, STDIN_FILENO);
             if (res_dup2 < 0) {
+                perror("perror ");
                 exit(EXIT_FAILURE);
             }
-
+            
             // Ejecuta todos los comandos del pipeline
             execute_pipeline_foreground(p);
 
