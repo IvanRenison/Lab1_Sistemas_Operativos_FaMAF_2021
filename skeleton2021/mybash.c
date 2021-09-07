@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
 
         /* Si se llegó a un final de archivo siginifca que hay que salir después
            de ejecutar el comando */
-        exit_from_mybash = !parser_at_eof(parser);
+        exit_from_mybash = parser_at_eof(parser);
 
         if (pipe != NULL) {
             execute_pipeline(pipe);
