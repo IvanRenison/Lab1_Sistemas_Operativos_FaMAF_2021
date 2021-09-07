@@ -178,12 +178,15 @@ static int scommand_exec(scommand cmd) {
 }
 
 /* Ejecuta un pipeline de un solo comando tanto si es interno como si es externo
- * en caso de ser externo hace fork pero en caso de ser interno no
+ * en caso de ser externo hace fork pero en caso de ser interno no y
+ * retorna la cantidad de hijos creados (0 o 1)
  *
  * Requires: apipe != NULL && pipeline_length(apipe) == 1
  */
-static void single_command(pipeline apipe) {
+static unsigned int single_command(pipeline apipe) {
     assert(apipe != NULL && pipeline_length(apipe) == 1);
+
+    unsigned int child_processes_running = 0u;
 
     if (builtin_scommand_is_single_internal(apipe)) {
         // Caso en el que comando es interno
@@ -193,17 +196,18 @@ static void single_command(pipeline apipe) {
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
-            return;
+            return child_processes_running;
         } else if (pid == 0) {
             scommand_exec(pipeline_front(apipe));
             _exit(1);
-        }
-        // El proceso padre solo espera a los hijos en caso de que no se indique el caracter
-        // & en el pipeline (osea, cuando está seeteado para que espere)
-        if (pipeline_get_wait(apipe)) {
-            waitpid(pid, NULL, 0);
+        } else {
+            // El padre
+            // Se cuenta un hijo
+            child_processes_running++;
         }
     }
+
+    return child_processes_running;
 }
 
 /* Como dup2, solo que ademas (si oldfd == newfd no hace nada y retorna newfd)
@@ -223,7 +227,7 @@ static int dup2_extra(int oldfd, int newfd) {
 }
 
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
- * (incluso para los internos) y si está seeteado para que espere, espera a que terminen
+ * (incluso para los internos) y retorna la cantidad de hijos creados
  * 
  * Puede modificar apipe pero no destruirlo, en caso de que no haya ningún error,
  * deja vacio a apipe
@@ -232,10 +236,10 @@ static int dup2_extra(int oldfd, int newfd) {
  * 
  * Ensures: apipe != NULL
  */
-static void multiple_commands(pipeline apipe) {
+static unsigned int multiple_commands(pipeline apipe) {
     assert(apipe != NULL && pipeline_length(apipe) >= 2);
 
-    int child_processes_running = 0;
+    unsigned int child_processes_running = 0u;
     int numberOfPipes = pipeline_length(apipe) - 1;
     bool error_flag = false;
     // Se asigna la cantidad de memoria necesaria para todos los pipes
@@ -254,7 +258,7 @@ static void multiple_commands(pipeline apipe) {
             // se libera la memoria
             free(pipesfd);
             pipesfd = NULL;
-            return;
+            return child_processes_running;
         }
     }
 
@@ -306,8 +310,7 @@ static void multiple_commands(pipeline apipe) {
         }
     }
 
-    // El proceso padre cierra los file descriptors y espera a los hijos en caso
-    // que pipeline_get_wait(p) = True
+    // Se cierran los descriptores de archivo
     for (int i = 0; i < 2 * numberOfPipes; i++) {
         close(pipesfd[i]);
     }
@@ -316,37 +319,64 @@ static void multiple_commands(pipeline apipe) {
     free(pipesfd);
     pipesfd = NULL;
 
-    if (pipeline_get_wait(apipe)) {
-        while (child_processes_running > 0) {
+    return child_processes_running;
+}
+
+/* Ejecuta un pipeline, haciendo fork para cada comando
+ * y retorna la cantidad de hijos creados
+ * 
+ * Puede modificar apipe pero no destruirlo
+ * 
+ * Requires: apipe != NULL
+ * 
+ * Ensures: apipe != NULL
+ */
+static unsigned int execute_pipeline_foreground(pipeline apipe) {
+    assert(apipe != NULL);
+
+    unsigned int length = pipeline_length(apipe);
+    unsigned int child_processes_running = 0u;
+
+    if (length == 1u) {
+        child_processes_running = single_command(apipe);
+    } else if (length >= 2u) {
+        child_processes_running = multiple_commands(apipe);
+    }
+    // En el caso de que apipe esté vacio no se hace nada
+
+    assert(apipe != NULL);
+
+    return child_processes_running;
+}
+
+void execute_pipeline(pipeline p) {
+    assert(p != NULL);
+
+    if (pipeline_get_wait(p)) {
+        // Se ejecutan todos los comandos
+        unsigned int child_processes_running = execute_pipeline_foreground(p);
+
+        // Se espera a que todos los hijos terminen
+        while (child_processes_running > 0u) {
             wait(NULL);
             child_processes_running--;
         }
-    }
-}
-
-/* Se encarga de ejecutar todos los comandos que se ingresan en el bash, desde los 
- * comandos simples (externos e internos), como los pipelines de 2 o más comandos, en el bash
- * se puede pasar el parámetro & el cual indica que los procesos se corren en background, es
- * decir el proceso padre no espera a que terminen los mismos.
- * No devuelve nada, dentro de los procesos hijos se realiza el manejo de los errores para
- * que la función muestre un mensaje de error en caso de que un dup2, fork o pipe falle.
- * No destruye el pipeline, pero si elimina sus elementos con pipeline_front_pop()
-*/
-void execute_pipeline(pipeline p) {
-    int numberOfPipes = pipeline_length(p) - 1;
-    //Caso en el que el pipe solo tiene un comando
-    zombie_handler();
-    if (numberOfPipes == 0) {
-        single_command(p);
     } else {
-        multiple_commands(p);
-    }
-}
+        // Hay que correrlo en modo background
+        pid_t pid = fork();
+        if (pid < 0) {
+            // Caso de que el fork falle
+            perror("fork");
+        } else if (pid == 0) {
+            // Ejecuta todos los comandos del pipeline
+            execute_pipeline_foreground(p);
 
-void zombie_handler() {
-    pid_t pid;
-    for (pid = waitpid(-1, NULL, WNOHANG); pid != 0 && pid != -1;
-         pid = waitpid(-1, NULL, WNOHANG)) {
-        wait(NULL);
+            // Y termina para que los hijos pasen a ser hijos del sistema
+            exit(EXIT_SUCCESS);
+        } else {
+            // El proceso padre
+            // Espera a que el hijo termine de crear todos los procesos
+            wait(NULL);
+        }
     }
 }

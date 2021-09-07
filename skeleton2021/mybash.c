@@ -16,10 +16,9 @@ int main(int argc, char *argv[]){
 
     parser = parser_new(stdin);
     while (!quit) {
-        zombie_handler();
         show_prompt();
         pipe = parse_pipeline(parser);  
-        quit = parser_at_eof(parser); // Chequeo si hay que salir luego deejecutar el comando
+        quit = parser_at_eof(parser); // Chequeo si hay que salir luego de ejecutar el comando
 
         if (pipe != NULL) {
             quit = quit || builtin_scommand_is_exit(pipeline_front(pipe));
