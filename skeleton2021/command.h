@@ -180,7 +180,6 @@ char** scommand_to_argv(scommand self);
  */
 char* scommand_to_string(const scommand self);
 
-
 /*
  * pipeline: tubería de comandos.
  * Ejemplo: ls -l *.c > out < in  |  wc  |  grep -i glibc  &

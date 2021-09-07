@@ -210,7 +210,6 @@ static unsigned int single_command(pipeline apipe) {
     return child_processes_running;
 }
 
-
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
  * (incluso para los internos) y retorna la cantidad de hijos creados
  * 
@@ -386,7 +385,7 @@ void execute_pipeline(pipeline p) {
                 perror("perror ");
                 exit(EXIT_FAILURE);
             }
-            
+
             // Ejecuta todos los comandos del pipeline
             execute_pipeline_foreground(p);
 

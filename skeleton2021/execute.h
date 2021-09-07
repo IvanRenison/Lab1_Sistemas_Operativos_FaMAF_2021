@@ -16,5 +16,4 @@
  */
 void execute_pipeline(pipeline apipe);
 
-
 #endif /* EXECUTE_H */

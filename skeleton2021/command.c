@@ -25,7 +25,6 @@ static GSList* g_slist_tail_free_full(GSList* xs, GDestroyNotify free_func) {
     return (result);
 }
 
-
 /********** COMANDO SIMPLE **********/
 
 /* Estructura correspondiente a un comando simple.
@@ -219,7 +218,6 @@ static char* append_scommand_to_string(char* chars, const scommand self) {
 
     return (chars);
 }
-
 
 /********** COMANDO PIPELINE **********/
 
