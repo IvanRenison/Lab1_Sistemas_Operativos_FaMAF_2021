@@ -210,7 +210,7 @@ static void single_command(pipeline apipe) {
 /* Como dup2, solo que ademas (si oldfd == newfd no hace nada y retorna newfd)
  * cierra oldfd y en caso de fallo, imprime un mensaje de error
  */
-/* static int dup2_extra(int oldfd, int newfd) {
+static int dup2_extra(int oldfd, int newfd) {
     if (oldfd != newfd) {
         newfd = dup2(oldfd, newfd);
         if (newfd < 0) {
@@ -221,7 +221,7 @@ static void single_command(pipeline apipe) {
     }
 
     return (newfd);
-} */
+}
 
 /* Ejecutá un pipeline de multiples comandos (2 o mas) haciendo fork para cada comando
  * (incluso para los internos) y si está seeteado para que espere, espera a que terminen
@@ -234,29 +234,26 @@ static void single_command(pipeline apipe) {
  * Ensures: apipe != NULL
  */
 static void multiple_commands(pipeline apipe) {
-
     assert(apipe != NULL && pipeline_length(apipe) >= 2);
-    pid_t pid;
+    
     int child_processes_running = 0;
-    int res_pipe;
-    int res_dup;
     int numberOfPipes = pipeline_length(apipe) - 1;
-    bool foreground = pipeline_get_wait(apipe);
     bool error_flag = false;
     // Se asigna la cantidad de memoria necesaria para todos los pipes
     int * pipesfd = calloc(2 * numberOfPipes, sizeof(int));
 
     // Se abren todos los pipes que se van a necesitar para la ejecucion
     for(int i = 0; i < numberOfPipes; i++){
-        res_pipe = pipe(pipesfd + i * 2);
+        int res_pipe = pipe(pipesfd + i * 2);
         if(res_pipe < 0){
-            perror("pipe: ");
-            //se libera la memoria
-            free(pipesfd);
-            //se cierran los pipes que ya se abrieron
+            // En caso de error de pipe
+            perror("pipe");
+            // se cierran los pipes que ya se abrieron
             for(int j = 0; j < 2 * i; j++){
                 close(pipesfd[j]);
             }
+            // se libera la memoria
+            free(pipesfd);
             return;
         }
     }
@@ -264,46 +261,48 @@ static void multiple_commands(pipeline apipe) {
     int j = 0;
     // Caso en el que haya un pipeline multiple
     while(!pipeline_is_empty(apipe) && !error_flag) {
-        pid = fork();
+        pid_t pid = fork();
+        if (pid < 0) {
+            //Caso de que el fork falle
+            perror("error");
+            //Si el fork falla se sale del ciclo para liberar la memoria y esperar a los
+            //hijos que ya se ejecutaron
+            error_flag = true;
+        }
         if(pid == 0) {
+            // El hijo
 
             //Si no es el ultimo comando
-            if(pipeline_length(apipe)> 1){
-                res_dup = dup2(pipesfd[j + 1], 1);
+            if(pipeline_length(apipe) > 1){
+                int res_dup = dup2_extra(pipesfd[j + 1], 1);
                 if(res_dup < 0){
-                    perror("dup2");
                     _exit(1);
                 }
             }
 
             //Si no es el primer comando
-            if(j != 0){
-                res_dup = dup2(pipesfd[j-2], 0);
+            if(j != 0) {
+                int res_dup = dup2_extra(pipesfd[j-2], 0);
                 if(res_dup < 0){
-                    perror(" dup2");
                     _exit(1);
                 }
             }
 
             //Se cierran todos los file descriptors
             for(int i = 0; i < 2*numberOfPipes; i++){
-                    close(pipesfd[i]);
+                close(pipesfd[i]);
             }
 
             scommand_exec(pipeline_front(apipe));
             _exit(1);
+
         } else if(pid > 0){
-            //El padre elimina un comando del pipe y aumenta el contador de procesos hijos
-            //ejecutandose
+            // El padre
+            // Elimina un comando del pipe y aumenta el contador de procesos hijos
+            // ejecutandose
             pipeline_pop_front(apipe);
-            j += 2;
+            j = j + 2;
             child_processes_running++;
-        } else {
-            //Caso de que el fork falle
-            perror("error");
-            //Si el fork falla se sale del ciclo para liberar la memoria y esperar a los
-            //hijos que ya se ejecutaron
-            error_flag = true;
         }
     }
 
@@ -316,9 +315,11 @@ static void multiple_commands(pipeline apipe) {
     // Se libera la memoria asignada
     free(pipesfd);
 
-    if (foreground) {
-        for(int i = 0; i < child_processes_running; i++)
+    if (pipeline_get_wait(apipe)) {
+        while (child_processes_running > 0) {
             wait(NULL);
+            child_processes_running--;
+        }
     }
 }
 
