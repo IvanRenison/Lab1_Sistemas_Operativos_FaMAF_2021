@@ -368,6 +368,27 @@ void execute_pipeline(pipeline p) {
             // Caso de que el fork falle
             perror("fork");
         } else if (pid == 0) {
+            // El proceso hijo
+
+            // Se conecta el stdin del hijo a un archivo vacio
+            /* Como archivo vacio se usa una punta de lectura de pipe
+               con punta de escritura cerrada */
+            int pipefds[2];
+            int res_pipe = pipe(pipefds);
+            if (res_pipe < 0) {
+                perror("pipe");
+                exit(EXIT_FAILURE);
+            }
+            int punta_lectura = pipefds[0];
+            int punta_escritura = pipefds[1];
+
+            close(punta_escritura);
+
+            int res_dup2 = dup2_extra(punta_lectura, STDIN_FILENO);
+            if (res_dup2 < 0) {
+                exit(EXIT_FAILURE);
+            }
+
             // Ejecuta todos los comandos del pipeline
             execute_pipeline_foreground(p);
 
