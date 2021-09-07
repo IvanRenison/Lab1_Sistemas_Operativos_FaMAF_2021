@@ -10,21 +10,27 @@
 #include "prompt.h"
 
 int main(int argc, char *argv[]){
+
+    // Inicializo exit_from_mybash para que no salga
+    exit_from_mybash = false;
+
     Parser parser;
     pipeline pipe;
-    bool quit = false;
 
     parser = parser_new(stdin);
-    while (!quit) {
+    while (!exit_from_mybash) {
+        // exit_from_mybash es una variable global declarada en builtin.h
         show_prompt();
-        pipe = parse_pipeline(parser);  
-        quit = parser_at_eof(parser); // Chequeo si hay que salir luego de ejecutar el comando
+        pipe = parse_pipeline(parser);
+
+        /* Si se llegó a un final de archivo siginifca que hay que salir después
+           de ejecutar el comando */
+        exit_from_mybash = !parser_at_eof(parser);
 
         if (pipe != NULL) {
-            quit = quit || builtin_scommand_is_exit(pipeline_front(pipe));
             execute_pipeline(pipe);
             pipeline_destroy(pipe);
-        } else if (!quit && pipe != NULL) {
+        } else if (!exit_from_mybash && pipe != NULL) {
             printf("Comando no valido\n");
         }
     }

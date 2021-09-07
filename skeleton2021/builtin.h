@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include "command.h"
 
+/* Variable global para volver true cuando el mybash se tiene que terminar
+ */
+bool exit_from_mybash;
+
 /*
  * Indica si un "exit"
  *

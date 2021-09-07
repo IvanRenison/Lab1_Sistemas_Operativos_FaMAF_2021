@@ -24,7 +24,7 @@ bool builtin_scommand_is_exit(const scommand cmd){
 static void builtin_run_exit(const scommand cmd){
     assert(cmd != NULL && builtin_scommand_is_exit(cmd));
 
-    exit(EXIT_SUCCESS); 
+    exit_from_mybash = true;
 }
 
 
