@@ -171,7 +171,7 @@ static int scommand_exec(scommand cmd) {
         builtin_scommand_exec(cmd);
         ret_code = 0;
     } else if (!scommand_is_empty(cmd)) {
-        scommand_exec_external(cmd);
+        ret_code = scommand_exec_external(cmd);
     }
 
     return (ret_code);
@@ -195,11 +195,13 @@ static unsigned int single_command(pipeline apipe) {
         //Caso en el que el comando es externo y se debe hacer fork()
         pid_t pid = fork();
         if (pid < 0) {
+            // En caso de error
             perror("fork");
             return child_processes_running;
         } else if (pid == 0) {
-            scommand_exec(pipeline_front(apipe));
-            _exit(1);
+            // El hijo
+            int res_exec = scommand_exec(pipeline_front(apipe));
+            _exit(res_exec);
         } else {
             // El padre
             // Se cuenta un hijo
@@ -274,8 +276,8 @@ static unsigned int multiple_commands(pipeline apipe) {
             if (pipeline_length(apipe) > 1) {
                 int res_dup = dup2(pipesfd[j + 1], STDOUT_FILENO);
                 if (res_dup < 0) {
-                    perror("dup ");
-                    _exit(1);
+                    perror("dup");
+                    _exit(EXIT_FAILURE);
                 }
             }
 
@@ -285,8 +287,8 @@ static unsigned int multiple_commands(pipeline apipe) {
                    por ende j >= 2 */
                 int res_dup = dup2(pipesfd[j - 2u], STDIN_FILENO);
                 if (res_dup < 0) {
-                    perror("dup ");
-                    _exit(1);
+                    perror("dup");
+                    _exit(EXIT_FAILURE);
                 }
             }
 
@@ -295,8 +297,11 @@ static unsigned int multiple_commands(pipeline apipe) {
                 close(pipesfd[i]);
             }
 
-            scommand_exec(pipeline_front(apipe));
-            _exit(1);
+            int res_exec = scommand_exec(pipeline_front(apipe));
+
+            /* En caso de que el comando haya sido interno, o la ejecución haya
+               fallado, se termina el hijo */
+            _exit(res_exec);
 
         } else if (pid > 0) {
             // El padre
