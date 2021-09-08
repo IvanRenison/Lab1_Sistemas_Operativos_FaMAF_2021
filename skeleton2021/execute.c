@@ -226,8 +226,16 @@ static unsigned int multiple_commands(pipeline apipe) {
     unsigned int child_processes_running = 0u;
     int numberOfPipes = pipeline_length(apipe) - 1;
     bool error_flag = false;
+
     // Se asigna la cantidad de memoria necesaria para todos los pipes
     int* pipesfd = calloc(2 * numberOfPipes, sizeof(int));
+    if (pipesfd == NULL) {
+        // En caso de que calloc falle
+        // Se imprime mensaje de error
+        perror("calloc");
+        // Se retorna
+        return child_processes_running;
+    }
 
     // Se abren todos los pipes que se van a necesitar para la ejecucion
     for (int i = 0; i < numberOfPipes; i++) {
