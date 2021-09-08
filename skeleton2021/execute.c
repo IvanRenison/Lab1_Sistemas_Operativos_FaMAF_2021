@@ -221,10 +221,12 @@ static unsigned int single_command(pipeline apipe) {
  * Ensures: apipe != NULL
  */
 static unsigned int multiple_commands(pipeline apipe) {
-    assert(apipe != NULL && pipeline_length(apipe) >= 2);
+    assert(apipe != NULL && pipeline_length(apipe) >= 2u);
 
     unsigned int child_processes_running = 0u;
-    int numberOfPipes = pipeline_length(apipe) - 1;
+
+    unsigned int numberOfPipes = pipeline_length(apipe) - 1u;
+    // pipeline_length(apipe) >= 2  ⇒  numberOfPipes >= 1
     bool error_flag = false;
 
     // Se asigna la cantidad de memoria necesaria para todos los pipes
@@ -238,13 +240,13 @@ static unsigned int multiple_commands(pipeline apipe) {
     }
 
     // Se abren todos los pipes que se van a necesitar para la ejecucion
-    for (int i = 0; i < numberOfPipes; i++) {
+    for (unsigned int i = 0u; i < numberOfPipes; i++) {
         int res_pipe = pipe(pipesfd + i * 2);
         if (res_pipe < 0) {
             // En caso de error de pipe
             perror("pipe");
             // se cierran los pipes que ya se abrieron
-            for (int j = 0; j < 2 * i; j++) {
+            for (unsigned int j = 0u; j < 2u * i; j++) {
                 close(pipesfd[j]);
             }
             // se libera la memoria
@@ -254,7 +256,7 @@ static unsigned int multiple_commands(pipeline apipe) {
         }
     }
 
-    int j = 0;
+    unsigned int j = 0;
     // Caso en el que haya un pipeline multiple
     while (!pipeline_is_empty(apipe) && !error_flag) {
         pid_t pid = fork();
@@ -277,17 +279,19 @@ static unsigned int multiple_commands(pipeline apipe) {
                 }
             }
 
-            //Si no es el primer comando
-            if (j != 0) {
-                int res_dup = dup2(pipesfd[j - 2], STDIN_FILENO);
+            // Si no es el primer comando
+            if (j != 0u) {
+                /* j se va incrementando de a 2, y nunca se decrementa,
+                   por ende j >= 2 */
+                int res_dup = dup2(pipesfd[j - 2u], STDIN_FILENO);
                 if (res_dup < 0) {
                     perror("dup ");
                     _exit(1);
                 }
             }
 
-            //Se cierran todos los file descriptors
-            for (int i = 0; i < 2 * numberOfPipes; i++) {
+            // Se cierran todos los file descriptors
+            for (unsigned int i = 0u; i < 2u * numberOfPipes; i++) {
                 close(pipesfd[i]);
             }
 
@@ -299,13 +303,13 @@ static unsigned int multiple_commands(pipeline apipe) {
             // Elimina un comando del pipe y aumenta el contador de procesos hijos
             // ejecutandose
             pipeline_pop_front(apipe);
-            j = j + 2;
+            j = j + 2u;
             child_processes_running++;
         }
     }
 
     // Se cierran los descriptores de archivo
-    for (int i = 0; i < 2 * numberOfPipes; i++) {
+    for (unsigned int i = 0u; i < 2u * numberOfPipes; i++) {
         close(pipesfd[i]);
     }
 
