@@ -10,6 +10,17 @@
 #include "command.h"
 #include "execute.h"
 
+// typedef
+
+/* Sinonimo de tipo para los descriptores de archivo
+ *
+ * Los descriptores de archivo habitualmente son ints, pero nosotros vamos
+ * a usar el tipo fd_t para distinguirlos mejor, y que el código sea mas claro
+ *
+ * El nombre viene de "file descriptor type" ("tipo descriptor de archivo" en español)
+ */
+typedef int fd_t;
+
 /* Pone, si existe, el archivo de redirección de entrada en el stdin,
  * si no existe no hace nada
  * Returns: 0 si la operación fue exitosa
@@ -24,7 +35,7 @@ static int change_file_descriptor_in(scommand cmd) {
     char* redir_in = scommand_get_redir_in(cmd);
     // si la redirección de entrada no está seeteada, scommand_get_redir_in devuelve NULL
     if (redir_in != NULL) {
-        int file_redir_in = open(redir_in, O_RDONLY);
+        fd_t file_redir_in = open(redir_in, O_RDONLY);
         // Si el archivo no existe, o hay algún otro tipo de error, open retorna
         // -1, si no retorna el descriptor del archivo
         if (file_redir_in == -1) {
@@ -33,7 +44,7 @@ static int change_file_descriptor_in(scommand cmd) {
             return (-1);
         }
 
-        int dup2_res = dup2(file_redir_in, STDIN_FILENO);
+        fd_t dup2_res = dup2(file_redir_in, STDIN_FILENO);
         // Si dup2 falla, retorna -1
         if (dup2_res == -1) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
@@ -77,7 +88,7 @@ static int change_file_descriptor_out(scommand cmd) {
                S_IWUSR: user has write permission
              */
 
-        int file_redir_out =
+        fd_t file_redir_out =
             open(redir_out, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 
         // Si hay algún error devuelve -1, en caso de que no exista el archivo
@@ -88,7 +99,7 @@ static int change_file_descriptor_out(scommand cmd) {
             return (-1);
         }
 
-        int dup2_res = dup2(file_redir_out, STDOUT_FILENO);
+        fd_t dup2_res = dup2(file_redir_out, STDOUT_FILENO);
         // Si dup2 falla, retorna -1
         if (dup2_res == -1) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
@@ -232,7 +243,7 @@ static unsigned int multiple_commands(pipeline apipe) {
     bool error_flag = false;
 
     // Se asigna la cantidad de memoria necesaria para todos los pipes
-    int* pipesfd = calloc(2 * numberOfPipes, sizeof(int));
+    fd_t* pipesfd = calloc(2 * numberOfPipes, sizeof(fd_t));
     if (pipesfd == NULL) {
         // En caso de que calloc falle
         // Se imprime mensaje de error
@@ -274,7 +285,7 @@ static unsigned int multiple_commands(pipeline apipe) {
 
             //Si no es el ultimo comando
             if (pipeline_length(apipe) > 1) {
-                int res_dup = dup2(pipesfd[j + 1], STDOUT_FILENO);
+                fd_t res_dup = dup2(pipesfd[j + 1], STDOUT_FILENO);
                 if (res_dup < 0) {
                     perror("dup");
                     _exit(EXIT_FAILURE);
@@ -285,7 +296,7 @@ static unsigned int multiple_commands(pipeline apipe) {
             if (j != 0u) {
                 /* j se va incrementando de a 2, y nunca se decrementa,
                    por ende j >= 2 */
-                int res_dup = dup2(pipesfd[j - 2u], STDIN_FILENO);
+                fd_t res_dup = dup2(pipesfd[j - 2u], STDIN_FILENO);
                 if (res_dup < 0) {
                     perror("dup");
                     _exit(EXIT_FAILURE);
@@ -386,18 +397,18 @@ void execute_pipeline(pipeline p) {
             // Se conecta el stdin del hijo a un archivo vacio
             /* Como archivo vacio se usa una punta de lectura de pipe
                con punta de escritura cerrada */
-            int pipefds[2];
+            fd_t pipefds[2];
             int res_pipe = pipe(pipefds);
             if (res_pipe < 0) {
                 perror("pipe");
                 exit(EXIT_FAILURE);
             }
-            int punta_lectura = pipefds[0];
-            int punta_escritura = pipefds[1];
+            fd_t punta_lectura = pipefds[0];
+            fd_t punta_escritura = pipefds[1];
 
             close(punta_escritura);
 
-            int res_dup2 = dup2(punta_lectura, STDIN_FILENO);
+            fd_t res_dup2 = dup2(punta_lectura, STDIN_FILENO);
             if (res_dup2 < 0) {
                 perror("perror ");
                 exit(EXIT_FAILURE);
