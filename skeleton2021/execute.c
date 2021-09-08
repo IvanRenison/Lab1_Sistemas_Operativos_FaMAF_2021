@@ -354,7 +354,7 @@ static unsigned int execute_pipeline_foreground(pipeline apipe) {
 
 /* Ejecuta los pipelines haciendo llamadas a las diferentes funciones
  * que ejecutan pipelines simples, en el caso de que un pipeline tenga comandos 
- * multiples y se ejcute en background hace un fork y una llamada a 
+ * multiples y se ejecute en background hace un fork y una llamada a
  * execute_pipeline_foreground, de esta forma los procesos que ejecutan los comandos 
  * son hijos del hijo, de esta forma podemos hacer que el proceso hijo haga exit para que
  * no espere a los hijos y de esta forma se corran los procesos en background, y ademas
