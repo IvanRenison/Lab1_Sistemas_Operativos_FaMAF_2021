@@ -177,10 +177,11 @@ char** scommand_to_argv(scommand self);
  *   Returns: un string con la representación del comando simple similar
  *     a lo que se escribe en un shell. El llamador es dueño del string
  *     resultante.
+ *         En caso de error de alocado de memoria retorna NULL.
  * Requires: self != NULL
- * Ensures: scommand_is_empty(self) ||
- *   scommand_get_redir_in(self) == NULL || scommand_get_redir_out(self) == NULL
- * || strlen(result ) > 0
+ * Ensures: result == NULL || scommand_is_empty(self) ||
+ *          scommand_get_redir_in(self) == NULL ||
+ *          scommand_get_redir_out(self) == NULL || strlen(result) > 0
  */
 char* scommand_to_string(const scommand self);
 
@@ -300,8 +301,10 @@ bool pipeline_get_wait(const pipeline self);
  *   self: pipeline a convertir.
  *   Returns: una cadena con la representación del pipeline similar
  *     a lo que se escribe en un shell. Debe destruirla el llamador.
+ *         En caso de error de alocado de memoria retorna NULL.
  * Requires: self != NULL
- * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result) > 0
+ * Ensures: result == NULL || pipeline_is_empty(self) ||
+ *          pipeline_get_wait(self) || strlen(result) > 0
  */
 char* pipeline_to_string(const pipeline self);
 

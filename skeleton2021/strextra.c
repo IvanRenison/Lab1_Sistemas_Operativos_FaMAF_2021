@@ -16,15 +16,24 @@ char* strmerge(char* s1, char* s2) {
 }
 
 char* str_concat(char* s1, const char* s2) {
-    assert(s1 != NULL && s2 != NULL);
+    assert(s2 != NULL);
 
-    size_t s1_len = strlen(s1);
-    size_t s2_len = strlen(s2);
+    if (s1 != NULL) {
+        size_t s1_len = strlen(s1);
+        size_t s2_len = strlen(s2);
 
-    s1 = realloc(s1, s1_len + s2_len +
-                         sizeof(char)); // El + sizeof(char) es para el '\0'
+        s1 = reallocarray(s1, s1_len + s2_len + 1, sizeof(char));
+        // El + 1 es para el '\0'
 
-    s1 = strcat(s1, s2);
+        if (s1 != NULL) {
+            // Si reallocarray no falla
+            s1 = strcat(s1, s2);
+        } else {
+            // Si reallocarray falla
+            free(s1);
+            s1 = NULL;
+        }
+    }
 
     return (s1);
 }

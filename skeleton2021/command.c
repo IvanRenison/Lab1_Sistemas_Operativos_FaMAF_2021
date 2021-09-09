@@ -201,7 +201,10 @@ char* scommand_to_string(const scommand self) {
         result = str_concat(result, self->redir_in);
     }
 
-    assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
+    // Notar que todo el manejo de errores pasa por str_concat
+
+    assert(result == NULL || scommand_is_empty(self) ||
+           scommand_get_redir_in(self) == NULL ||
            scommand_get_redir_out(self) == NULL || strlen(result) > 0);
 
     return (result);
@@ -346,8 +349,10 @@ char* pipeline_to_string(const pipeline self) {
         }
     }
 
-    assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
-           strlen(result) > 0);
+    // Notar que todo el manejo de errores pasa por str_concat
+
+    assert(result == NULL || pipeline_is_empty(self) ||
+           pipeline_get_wait(self) || strlen(result) > 0);
 
     return result;
 }
