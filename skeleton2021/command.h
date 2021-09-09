@@ -155,15 +155,19 @@ char* scommand_get_redir_out(const scommand self);
 /*
  * Convierte todos los argumentos de self en un arreglo de arreglos, que termina
  * en NULL. Los argumentos son eliminados de self, de forma que self queda vacía
- * El arreglo devuelto, y todos los arreglos que contiene son propiedad del
- * llamador
- *
+ * El arreglo devuelto, y todos los arreglos que contiene son propiedad del llamador
+ * 
+ * En caso de que haya un error de allocado de memoría devuelve NULL, pero podría
+ * dejar self modificado
+ * 
  * Requires: self != NULL
  *
  * Si n = scommand_length(self) (del self del comienzo):
- * Ensures: self != NULL && scommand_is_empty(self)
- *          && argv != NULL && ⟨∀j ∈ 0..n-1 : argv[j] != NULL⟩
- *          && argv[n] == NULL
+ * Ensures: self != NULL &&
+ *          ((argv == NULL) !=
+ *           (scommand_is_empty(self) && argv != NULL && argv[n] == NULL))
+ * 
+ * (Pensar el != como un ó-exclusivo)
  */
 char** scommand_to_argv(scommand self);
 

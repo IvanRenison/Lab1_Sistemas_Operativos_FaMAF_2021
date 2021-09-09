@@ -145,6 +145,10 @@ static int scommand_exec_external(scommand cmd) {
     }
 
     char** argv = scommand_to_argv(cmd);
+    if (argv == NULL) {
+        // En caso de que scommand_to_argv falle
+        return (-1);
+    }
     // argv != NULL  por poscondición de scommand_to_argv
     int ret_code = execvp(argv[0], argv);
 

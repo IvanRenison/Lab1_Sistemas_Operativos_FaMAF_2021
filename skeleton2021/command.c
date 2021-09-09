@@ -158,17 +158,20 @@ char** scommand_to_argv(scommand self) {
     unsigned int n = scommand_length(self);
     char** argv = calloc(sizeof(char*), n + 1);
 
-    for (unsigned int j = 0; j < n; j++) {
-        char* arg = scommand_front_and_pop(self);
-        argv[j] = arg;
+    if (argv != NULL) {
+        for (unsigned int j = 0; j < n; j++) {
+            char* arg = scommand_front_and_pop(self);
+            argv[j] = arg;
 
-        assert(argv[j] != NULL);
-        // Este assert verifica la parte de ⟨∀j ∈ 0..n-1 : argv[i] != NULL⟩
+            assert(argv[j] != NULL);
+            // Este assert verifica la parte de ⟨∀j ∈ 0..n-1 : argv[i] != NULL⟩
+        }
+        argv[n] = NULL;
     }
-    argv[n] = NULL;
 
-    assert(self != NULL && scommand_is_empty(self) && argv != NULL &&
-           argv[n] == NULL);
+    assert(self != NULL &&
+           ((argv == NULL) !=
+            (scommand_is_empty(self) && argv != NULL && argv[n] == NULL)));
     return (argv);
 }
 
