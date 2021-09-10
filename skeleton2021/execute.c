@@ -23,8 +23,8 @@ typedef int fd_t;
 
 /* Pone, si existe, el archivo de redirección de entrada en el stdin,
  * si no existe no hace nada
- * Returns: 0 si la operación fue exitosa
- *          1 si la operación falló
+ * Returns: EXIT_SUCCESS si la operación fue exitosa
+ *          EXIT_FAILURE si la operación falló
  *
  * Requires: cmd != NULL
  *
@@ -41,7 +41,7 @@ static int change_file_descriptor_in(scommand cmd) {
         if (file_redir_in == -1) {
             // En caso de error, open seetea el mansaje de perror
             perror(redir_in);
-            return (-1);
+            return (EXIT_FAILURE);
         }
 
         fd_t dup2_res = dup2(file_redir_in, STDIN_FILENO);
@@ -50,24 +50,24 @@ static int change_file_descriptor_in(scommand cmd) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
             // Si lo hace, dup2 seetea el mensaje de perror
             perror("dup2");
-            return (-1);
+            return (EXIT_FAILURE);
         }
 
         int res_close = close(file_redir_in);
         if (res_close == -1) {
-            // No debería fallar, PERO si falla...
+            // No debería fallar, pero si falla seetea el mansaje de perror
             perror("dup2");
-            return (-1);
+            return (EXIT_FAILURE);
         }
     }
-    return (0);
+    return (EXIT_SUCCESS);
 }
 
 /* Pone, si existe, el archivo de redirección de salida en el stdout,
  * si el archivo no existe lo crea.
  * Si la redirección de salida no está seeteada no hace nada
- * Returns: 0 si la operación fue exitosa
- *          1 si la operación falló
+ * Returns: EXIT_SUCCESS si la operación fue exitosa
+ *          EXIT_FAILURE si la operación falló
  *
  * Requires: cmd != NULL
  *
@@ -96,7 +96,7 @@ static int change_file_descriptor_out(scommand cmd) {
         if (file_redir_out == -1) {
             // En caso de error, open seetea el mansaje de perror
             perror(redir_out);
-            return (-1);
+            return (EXIT_FAILURE);
         }
 
         fd_t dup2_res = dup2(file_redir_out, STDOUT_FILENO);
@@ -105,91 +105,83 @@ static int change_file_descriptor_out(scommand cmd) {
             // dup2 no suele fallar, pero podría llegar a hacerlo
             // Si lo hace, dup2 seetea el mensaje de perror
             perror("dup2");
-            return (-1);
+            return (EXIT_FAILURE);
         }
 
         int res_close = close(file_redir_out);
         if (res_close == -1) {
-            // No debería fallar, PERO si falla...
+            // No debería fallar, pero si falla seetea el mansaje de perror
             perror("close");
-            return (-1);
+            return (EXIT_FAILURE);
         }
     }
-    return (0);
+    return (EXIT_SUCCESS);
 }
 
 /* Ejecuta un comando como comando externo en el mismo proceso, es decir sin hacer
- * fork, redirigiendo el stdin y el stdout si están seeteados
- * Puede modificar cmd, pero no destruirlo
- * Si la llamada sale bien no se retorna, si la llamada sale mal, si hay algún
- * problema con la redirección de entrada o de salida se retorna -1, y si la llamada
- * al programa falla se retorna el código de error
- * En caso de fallar la llamada al programa, los descriptores de archivo quedan cambiados
+ * fork, redirigiendo el stdin y el stdout si están seeteados.
+ * Si la ejecución es exitosa no retorna por que hace execvp. Si la ejecución
+ * falla tampoco retorna porque hace exit, pero antes imprime un mensaje de error
  *
  * Requires: cmd != NULL && !scommand_is_empty(cmd)
- *
+ * 
+ * Ensures: No retorno
  */
-static int scommand_exec_external(scommand cmd) {
+static void scommand_exec_external(scommand cmd) {
     assert(cmd != NULL && !scommand_is_empty(cmd));
 
     // Se cambia stdin por el archivo de redirección de entrada, si es que está seeteado
     int exit_redir_in = change_file_descriptor_in(cmd);
-    if (exit_redir_in != 0) {
-        return (-1);
+    if (exit_redir_in != EXIT_SUCCESS) {
+        exit(EXIT_FAILURE);
     }
 
     // Se cambia stdout por el archivo de redirección de salida, si es que está seeteado
     int exit_redir_out = change_file_descriptor_out(cmd);
-    if (exit_redir_out != 0) {
-        return (-1);
+    if (exit_redir_out != EXIT_SUCCESS) {
+        exit(EXIT_FAILURE);
     }
 
     char** argv = scommand_to_argv(cmd);
     if (argv == NULL) {
         // En caso de que scommand_to_argv falle
-        return (-1);
+        exit(EXIT_FAILURE);
     }
-    // argv != NULL  por poscondición de scommand_to_argv
-    int ret_code = execvp(argv[0], argv);
+
+    execvp(argv[0], argv);
 
     /* Si execvp falla (y por ende retorna) se imprime un mensaje
-      y se libera la memoria */
+      y se termina el programa */
     perror(argv[0]);
-    ret_code = ret_code;
 
-    unsigned int j = 0u;
-    while (argv[j] != NULL) {
-        free(argv[j]);
-        argv[j] = NULL;
-        j++;
-    }
-    free(argv);
-    argv = NULL;
-
-    return ret_code;
+    exit(EXIT_FAILURE);
 }
 
-/* Ejecuta un comando, tanto si es interno como si es externo
- * En el caso de ser externo solo retorna si hay un error, y en ese caso,
- * devuelve -1. En caso se ser un interno, retorna 0.
- * Puede modificar cmd, pero no destruirlo
- * 
- * En caso de fallar la llamada al programa, los descriptores de archivo pueden quedar
- * cambiados por los de redirección de entrada y de salida
+/* Ejecuta un comando, tanto si es interno como si es externo y termina la
+ * ejecución.
  *
  * Requires: cmd != NULL
+ * 
+ * Ensures: No retorno
  */
-static int scommand_exec(scommand cmd) {
+static void scommand_exec(scommand cmd) {
     assert(cmd != NULL);
-    int ret_code = 0;
-    if (builtin_scommand_is_internal(cmd)) {
-        builtin_scommand_exec(cmd);
-        ret_code = 0;
-    } else if (!scommand_is_empty(cmd)) {
-        ret_code = scommand_exec_external(cmd);
-    }
 
-    return (ret_code);
+    if (builtin_scommand_is_internal(cmd)) {
+        // Si es interno se ejecuta
+        builtin_scommand_exec(cmd);
+        // Y se sale del programa
+        exit(EXIT_SUCCESS);
+    } else if (!scommand_is_empty(cmd)) {
+        // Si es externo y no vacio se lo ejecuta
+        scommand_exec_external(cmd);
+        // scommand_exec_external no retorna
+    } else {
+        // Si es vacio
+        exit(EXIT_SUCCESS);
+    }
+    // Esto no se debería ejecutar
+    assert(false);
 }
 
 /* Ejecuta un pipeline de un solo comando tanto si es interno como si es externo
@@ -197,6 +189,8 @@ static int scommand_exec(scommand cmd) {
  * Retorna la cantidad de hijos creados (0 o 1)
  *
  * Requires: apipe != NULL && pipeline_length(apipe) == 1
+ * 
+ * Ensures: child_processes_running == 0 || child_processes_running == 1
  */
 static unsigned int single_command(pipeline apipe) {
     assert(apipe != NULL && pipeline_length(apipe) == 1);
@@ -215,14 +209,16 @@ static unsigned int single_command(pipeline apipe) {
             return child_processes_running;
         } else if (pid == 0) {
             // El hijo
-            int res_exec = scommand_exec(pipeline_front(apipe));
-            _exit(res_exec);
+            scommand_exec(pipeline_front(apipe));
+            // scommand_exec no retorna
         } else {
             // El padre
             // Se cuenta un hijo
             child_processes_running++;
         }
     }
+
+    assert(child_processes_running == 0 || child_processes_running == 1);
 
     return child_processes_running;
 }
@@ -243,7 +239,7 @@ static unsigned int multiple_commands(pipeline apipe) {
     unsigned int child_processes_running = 0u;
 
     unsigned int numberOfPipes = pipeline_length(apipe) - 1u;
-    // pipeline_length(apipe) >= 2  ⇒  numberOfPipes >= 1
+    // pipeline_length(apipe) >= 2u  ⇒  numberOfPipes >= 1u
     bool error_flag = false;
 
     // Se asigna la cantidad de memoria necesaria para todos los pipes
@@ -312,12 +308,8 @@ static unsigned int multiple_commands(pipeline apipe) {
                 close(pipesfd[i]);
             }
 
-            int res_exec = scommand_exec(pipeline_front(apipe));
-
-            /* En caso de que el comando haya sido interno, o la ejecución haya
-               fallado, se termina el hijo */
-            _exit(res_exec);
-
+            scommand_exec(pipeline_front(apipe));
+            // scommand_exec no retorna
         } else if (pid > 0) {
             // El padre
             // Elimina un comando del pipe y aumenta el contador de procesos hijos
