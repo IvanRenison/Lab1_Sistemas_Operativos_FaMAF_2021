@@ -330,18 +330,6 @@ scommand pipeline_front(const pipeline self) {
     return result;
 }
 
-scommand pipeline_front_and_pop(pipeline self) {
-    assert(self != NULL && !pipeline_is_empty(self));
-
-    scommand result = g_slist_nth_data(self->scmds, 0u);
-
-    self->scmds = g_slist_remove(self->scmds, result);
-    // g_slist_remove libera el nodo, pero no el elemento
-
-    assert(result != NULL);
-    return (result);
-}
-
 bool pipeline_get_wait(const pipeline self) {
     assert(self != NULL);
 

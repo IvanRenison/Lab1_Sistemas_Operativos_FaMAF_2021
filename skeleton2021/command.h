@@ -281,14 +281,6 @@ unsigned int pipeline_length(const pipeline self);
 scommand pipeline_front(const pipeline self);
 
 /*
- * Elimina el comando de adelante de self, y la devuelve.
- * El comando retornado es propiedad del llamador, y debe ser destruido
- * Requires: self != NULL && !pipeline_is_empty(self)
- * Ensures: result != NULL
- */
-scommand pipeline_front_and_pop(pipeline self);
-
-/*
  * Consulta si el pipeline tiene que esperar o no.
  *   self: pipeline a decidir si hay que esperar.
  *   Returns: ¿Hay que esperar en el pipeline self?
