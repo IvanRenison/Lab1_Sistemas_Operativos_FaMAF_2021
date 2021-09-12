@@ -38,6 +38,16 @@ struct scommand_s {
 
 scommand scommand_new(void) {
     scommand result = malloc(sizeof(struct scommand_s));
+    if (result == NULL) {
+        /* malloc puede fallar y devolver NULL, sin embargo las poscondición
+           exige result != NULL, y posiblemente el módulo parser dependa de esa
+           poscondición, por lo cuál no la podemos modificar.
+           Por ende, en el caso de que malloc falle, imprimios mensaje de error
+           y terminamos el programa
+        */
+        perror("Error fatal: malloc");
+        exit(EXIT_FAILURE);
+    }
     result->args = NULL;
     result->redir_in = NULL;
     result->redir_out = NULL;
@@ -237,11 +247,23 @@ struct pipeline_s {
 
 pipeline pipeline_new(void) {
     pipeline result = malloc(sizeof(struct pipeline_s));
+    if (result == NULL) {
+        /* malloc puede fallar y devolver NULL, sin embargo las poscondición
+           exige result != NULL, y posiblemente el módulo parser dependa de esa
+           poscondición, por lo cuál no la podemos modificar.
+           Por ende, en el caso de que malloc falle, imprimios mensaje de error
+           y terminamos el programa
+        */
+        perror("Error fatal: malloc");
+        exit(EXIT_FAILURE);
+    }
+
     result->scmds = NULL;
     result->wait = true;
 
     assert(result != NULL && pipeline_is_empty(result) &&
            pipeline_get_wait(result));
+
     return result;
 }
 
