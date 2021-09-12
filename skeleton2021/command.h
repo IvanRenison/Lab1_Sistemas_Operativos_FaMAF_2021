@@ -165,7 +165,10 @@ char* scommand_get_redir_out(const scommand self);
  * Si n = scommand_length(self) (del self del comienzo):
  * Ensures: self != NULL &&
  *          ((argv == NULL) !=
- *           (scommand_is_empty(self) && argv != NULL && argv[n] == NULL))
+ *           (scommand_is_empty(self) && argv != NULL && argv[n] == NULL
+ *            && ⟨∀i ∈ 0..n-1 : argv[i] != NULL⟩
+ *           )
+ *          )
  * 
  * (Pensar el != como un ó-exclusivo)
  */

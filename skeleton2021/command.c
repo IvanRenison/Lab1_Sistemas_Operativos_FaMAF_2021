@@ -174,7 +174,7 @@ char** scommand_to_argv(scommand self) {
             argv[j] = arg;
 
             assert(argv[j] != NULL);
-            // Este assert verifica la parte de ⟨∀j ∈ 0..n-1 : argv[i] != NULL⟩
+            // Este assert verifica la parte de ⟨∀i ∈ 0..n-1 : argv[i] != NULL⟩
         }
         argv[n] = NULL;
     }
