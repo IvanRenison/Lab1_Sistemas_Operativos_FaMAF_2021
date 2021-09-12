@@ -157,8 +157,8 @@ char* scommand_get_redir_out(const scommand self);
  * en NULL. Los argumentos son eliminados de self, de forma que self queda vacía
  * El arreglo devuelto, y todos los arreglos que contiene son propiedad del llamador
  * 
- * En caso de que haya un error de allocado de memoría devuelve NULL, pero podría
- * dejar self modificado
+ * En caso de que haya un error de allocado de memoría devuelve NULL, y deja
+ * seteado el perror de calloc
  * 
  * Requires: self != NULL
  *

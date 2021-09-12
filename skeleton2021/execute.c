@@ -145,6 +145,7 @@ static void scommand_exec_external(scommand cmd) {
     char** argv = scommand_to_argv(cmd);
     if (argv == NULL) {
         // En caso de que scommand_to_argv falle
+        perror("calloc");
         exit(EXIT_FAILURE);
     }
 
