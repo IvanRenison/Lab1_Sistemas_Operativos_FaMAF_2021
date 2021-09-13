@@ -19,16 +19,18 @@
   - [Archivos .h](#Archivos-.h)
   - [Valgrind: memory leaks de la librería](#Valgrind:-memory-leaks-de-la-librería)
   - [Command](#Command)
-    - [Funciones command](#Funciones-command)
+    - [Implementación](#Implementación)
+    - [Valgrind con GSList](#Valgrind-con-GSList)
   - [Builtin](#Builtin)
-    - [Funciones builtin](#Funciones-builtin)
-  - [Syscall](#Syscall)
+    - [Syscall](#Syscall)
     - [Sobre el funcionamiento de cd en el parser y su funcionamiento en Bash](#Sobre-el-funcionamiento-de-cd-en-el-parser-y-su-funcionamiento-en-Bash)
   - [Execute](#Execute)
     - [Los procesos zombies](#Los-procesos-zombies)
     - [Error en test](#Los-tests-de-execute)
   - [Parser](#Parser)
 - [Extra: nuestra-forma-de-trabajar](#Extra:-nuestra-forma-de-trabajar)
+  - [Redacción del informe](#Redacción-del-informe)
+  - [Estilo del código](#Estilo-del-código)
 
 # ¿Cómo correrlo?
 
@@ -78,7 +80,7 @@ valgrind ./mybash
 
     Para implementar los `scommand` y los `pipeline` hace falta algún **TAD** tipo lista. Nosotros usamos el TAD `GSList` de la libraría `glib.h`. Posiblemente hubiera sido mas eficiente usar `GQueue` o `GSequence`, pero en el esqueleto estaba empezado con `GSList`, y cuando empezamos a hacer el proyecto, como todavía estábamos comenzando, decidimos continuar con la misma librería. Después nos fuimos dando cuenta de que todo estaba medio pensado para que cambiamos cosas si queríamos, pero como ya habíamos terminado lo dejamos con la librería que tenía inicialmente.
 
-### Valgrind con `GSList`
+### Valgrind con GSList
 
     Por como están optimizados los TAD de `glib`, al ejecutar con `valgrind` aparece en la categoría `still reachable` del `LEAK SUMMARY` muchos bytes, que **no son memory leaks**, pero `valgrind` los detecta. Para poder distinguir esos leaks de los propios lo que se puede hacer es compilar con el flag `-g` y ejecutar valgrind con el flag `--leak-check=full`. Esto lo que hace es mostrar el origen de los leaks en los archivos compilados con `-g`, entonces, como `glib` no está compilado con `-g`, solo muestra el origen si son memory leaks causados por el código propio.
 
@@ -161,6 +163,10 @@ test_execute.c:192:F:Functionality:test_external_1_simple_background:0: Assertio
 
     Esto se debe a que los test esperan que cuando el `pipeline` está seeteado para que no espere no se haga ningún `wait`, que sería lo lógico si se ignoraran los procesos zombies. Sin embargo, nosotros si estamos haciendo un `wait` para esperar al procesos que crea todos los hijos, y por eso es que los tests no dan.
 
+## Parser
+
+    Decidimos crear nuestro propio **parser**, el desarrollo del mismo fue realizado en la branch [bash_background](https://bitbucket.org/sistop-famaf/so21lab1g27/src/bash_background/), en el informe de dicha branch se encuentran las funcionalidades de parseo.
+
 # Extra: nuestra forma de trabajar
 
 1. En el archivo [todo.md](todo.md) se encuentran las diferentes consignas y tareas que realizábamos (no siempre es commiteado).
@@ -169,11 +175,13 @@ test_execute.c:192:F:Functionality:test_external_1_simple_background:0: Assertio
 
 3. Comunicación: [Telegram](https://web.telegram.org/) y [Discord](https://discord.com/)
 
-### Redacción del informe:
+## Redacción del informe
 
     Para redactar el informe un miembro del grupo se encargo, y los demás ayudaron. Esto para mantener más coherencia y el mismo estilo.
 
-### Estilo del código
+## Estilo del código
+
+    Como el kickstart tenía inconsistencias con respecto al estilo del código decidimos buscar alguna alternativa para poder seguir con esta regla.
 
     Para mantener todo el código con el mismo estilo usamos el formateador de `clang`, por lo cuál tenemos un archivo llamado `.clang-format` que tiene la configuración de formateo. Esta toma como base una configuración llamada `LLVM`, y hace algunas modificaciones (ver el archivo para verlas).
 

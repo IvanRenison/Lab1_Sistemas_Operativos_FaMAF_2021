@@ -28,6 +28,7 @@
 # Sobre la entrega del lab
 
 El proyecto deberá:
+
 1) Ejecutar comandos simples con sus correspondientes argumentos y redirecciones de entrada y salida.
 
 2) Manejar pipelines de hasta dos comandos simples.
@@ -50,13 +51,15 @@ Se pueden optativa menterealizar las siguientes mejoras a nuestro bash:
 ```bash
 scomand_1 | ... | scommand_n
 ```
-- Implementar el comando secuencial “&&” entre comandos simples:
+- [x] Implementar el comando secuencial “`&&`” entre comandos simples (en la branch [bash_background](https://bitbucket.org/sistop-famaf/so21lab1g27/src/bash_background/)):
 ```bash
 scomand_1 && ... && scommand_n
 ```
 - [x] Imprimir un **prompt** con información relevante, por ejemplo, nombre del host, nombre de usuario y camino relativo.
 
-- Implementar toda la generalidad para aceptar la gramática de *list* según la sección SHELLGRAMMAR de man bash. Por ejemplo, se podrá ejecutar `ls -l | wc ; ls & ps`. Para hacer esto habrá que pensar mejor las estructuras porque pipeline incorpora el indicador de 2do plano que debería estar en *list*.
+- Implementar toda la generalidad para aceptar la gramática de *list* según la sección SHELLGRAMMAR de `man bash`.
+
+    Por ejemplo, se podrá ejecutar `ls -l | wc ; ls & ps`. Para hacer esto habrá que pensar mejor las estructuras porque pipeline incorpora el indicador de 2do plano que debería estar en *list*.
 
 - Cualquier otra mejora que ustedes consideren relevante.
 
@@ -73,6 +76,10 @@ Entonces, quería preguntar, ¿podemos modificar un poco el módulo builtin (agr
 > Para este lab, podés asumir que si el primer comando de un pipeline es un builtin, entonces el pipeline tiene un único comando. O sea, que no vas a recibir cosas como cd lala | ls -l. O, si lo recibís, sólo vas a ejecutar el cd y listo.
 
 > Hola grupo! Si quieren modificar el builtin, me encanta la idea, pero i) haganlo una vez que terminen el execute, sería como "punto estrella", ii) no les prometo que no les robemos el código para el año que viene si queda lindo :P
+
+- Creación de nuestro propio `parse.c`
+
+    branch: [bash_background](https://bitbucket.org/sistop-famaf/so21lab1g27/src/bash_background/)
 
 ---
 
