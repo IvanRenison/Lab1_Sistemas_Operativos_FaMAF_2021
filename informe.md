@@ -110,209 +110,25 @@ valgrind --suppressions=/usr/share/glib-2.0/valgrind/glib.supp --show-reachable=
 
 ## Command
 
-### Funciones command
+    El primer módulo que implementamos fue el módulo `command`. En este módulo dejemos casi toda la interfaz (ósea lo de `.h`) igual. Las únicas modificaciones que hicimos fueron las siguientes:
 
-### Scomands
+    Agregamos la función `scommand_front_and_pop` que elimina el primer elemento de un `scommand` y lo devuelve. Esta función la usamos adentro de `scommand.c`, pero no la usamos en ningún otro lugar del código, pero nos parecio buena idea dejarla en el `.h`, ya que podría llegar a ser útil para algo.
 
-```c
-typedef struct scommand_s* scommand;
-```
+    Agregamos la función `scommand_get_nth` que obtiene el n-abo elemento del `scommand`. Está función la agregamos para poder usarla en la función que ejcuta el comando `cd` en el módulo `builtin`. No era necesario usarla, pero si nos parecio mas eficiente y prolijo.
 
->  Nuevo `scommand`, sin comandos o argumentos y los redirectores vacíos
-> 
-> > Returns: nuevo comando simple sin ninguna cadena y redirectores vacíos.
+    Agregamos la función `scommand_to_argv` que toma un `scommand` y devuelve un vector de `char*` terminado en `NULL`, que tiene todas las palabras del `scommand`. Esta función la usamos en el módulo `execute` para convertir el `scommand` en un un vector para pasarle a `execvp`.
 
-```c
-scommand scommand_new(void);
-```
+    Modificamos las poscondiciones de `scommand_to_string` y `pipeline_to_string` para no tener que llamar a `exit` en caso de que falle el alocado de memoria.
 
-> Destruye `self`.
+### Implementación
 
-```c
-scommand scommand_destroy(scommand self);
-```
+    Para implementar los `scommand` y los `pipeline` hace falta algún TAD tipo lista. Nosotros usamos el TAD `GSList` de la libraría `glib.h`. Posiblemente hubiera sido mas eficiente usar `GQueue` o `GSequence`, pero en el esqueleto estaba empezado con `GSList`, y al cuando lo empezamos a hacer, como todavía era muy al principio, no nos animamos a cambiar nada. Después nos fuimos dando cuenta de que todo estaba medio pensado para que cambiamos cosas si queriamos, pero eso ya lo teniamos hecho.
 
-**Modificadores**
+### Valgrind con `GSList`
 
-> Agrega por detrás una cadena a la secuencia de cadenas.
+    Por como están optimizados los TAD de `glib`, al ejecutar con `valgrind` aparece en la categoría `still reachable` del `LEAK SUMMARY` muchos bytes, que no son memory leaks, pero `valgrind` los detecta. Para poder distingir esos leaks de los propios lo que se puede hacer es compilar con el flag `-g` y ejecutar valgrind con el flag `--leak-check=full`. Esto lo que hace es mostrate el origen de los leaks en los archivos compilados con `-g`, encontces, como `glib` no está comilado con `-g`, solo muestra el origen si son memory leaks causados por el código propio.
 
-```c
-void scommand_push_back(scommand self, char* argument);
-```
-
-> Quita la cadena de adelante de la secuencia de cadenas. `self`: comando simple al cual sacarle la cadena del frente.
-
-```c
-void scommand_pop_front(scommand self);
-```
-
-> Define la redirección de entrada. `self`: comando simple al cual establecer la redirección de entrada. `filename`: cadena con el nombre del archivo de la redirección o NULL si no se quiere redirección. El TAD se apropia de la referencia.
-
-```c
-void scommand_set_redir_in(scommand self, char* filename);
-```
-
-> Define la redirección de salida. `self`: comando simple al cual establecer la redirección de salida. `filename`: cadena con el nombre del archivo de la redirección o NULL si no se quiere redirección. El TAD se apropia de la referencia.
-
-```c
-void scommand_set_redir_out(scommand self, char* filename);
-```
-
-**Proyectores**
-
-> Indica si la secuencia de cadenas tiene longitud 0. `self`: comando simple a decidir si está vacío.
-> 
-> > Returns: ¿Está vacío de cadenas el comando simple?
-
-```c
-bool scommand_is_empty(const scommand self);
-```
-
-> Da la longitud de la secuencia cadenas que contiene el comando simple. `self`: comando simple a medir.
-> 
-> > Returns: largo del comando simple.
-
-```c
-unsigned int scommand_length(const scommand self);
-```
-
-> Toma la cadena de adelante de la secuencia de cadenas. `self`: comando simple al cual tomarle la cadena del frente.
-> 
-> > Returns: cadena del frente. La cadena retornada sigue siendo propiedad del TAD (ósea que el llamador no debe modificarla ni liberarla). Si se necesita una cadena propria hay que copiarla.
-
-```c
-char* scommand_front(const scommand self);
-```
-
-> Elimina la cadena de adelante de `self`, y la devuelve. La cadena retornada es propiedad del llamador, y debe ser liberada con **free**.
-
-```c
-char* scommand_front_and_pop(scommand self);
-```
-
-> Retorna el n-esimo argumento de `self`, la cadena retornada sigue siendo propiedad del TAD.
-
-```c
-char* scommand_get_nth(scommand self, unsigned int n);
-```
-
-```c
-char* scommand_get_redir_in(const scommand self);
-```
-
-```c
-char* scommand_get_redir_out(const scommand self);
-```
-
-> Convierte todos los argumentos de self en un arreglo de arreglos, que termina
-
-* en NULL. Los argumentos son eliminados de self, de forma que self queda vacía
-
-* El arreglo devuelto, y todos los arreglos que contiene son propiedad del
-
-* llamador
-  
-  ```c
-  char** scommand_to_argv(scommand self);
-  ```
-
->  Genera una representación del comando simple en un string (aka "serializar") `self`: comando simple a convertir.
-> 
-> > Returns: un string con la representación del comando simple similar a lo que se escribe en un shell. El llamador es dueño del string resultante.
-
-```c
-char* scommand_to_string(const scommand self);
-```
-
-### Pipelines
-
-```c
-typedef struct pipeline_s* pipeline;
-```
-
-> Nuevo `pipeline`, sin comandos simples y establecido para que espere.
-> 
-> > Returns: nuevo pipeline sin comandos simples y que espera.
-
-```c
-pipeline pipeline_new(void);
-```
-
-> Destruye `self`.
-
-```c
-pipeline pipeline_destroy(pipeline self);
-```
-
-**Modificadores**
-
-> Agrega por detrás un comando simple a la secuencia.
-> 
-> > `sc`: comando simple a agregar. El TAD se apropia del comando.
-
-```c
-void pipeline_push_back(pipeline self, scommand sc);
-```
-
-> Quita el comando simple de adelante de la secuencia. Destruye el comando extraído.
-
-```c
-void pipeline_pop_front(pipeline self);
-```
-
-> Define si el pipeline tiene que esperar o no.
-
-```c
-void pipeline_set_wait(pipeline self, const bool w);
-```
-
-> Indica si la secuencia de comandos simples tiene longitud 0.
-> 
-> > Returns: ¿Está vacío de comandos simples el pipeline?
-
-```c
-bool pipeline_is_empty(const pipeline self);
-```
-
-> Da la longitud de la secuencia de comandos simples.
-> 
-> > Returns: largo del pipeline.
-
-```c
-unsigned int pipeline_length(const pipeline self);
-```
-
-> Devuelve el comando simple de adelante de la secuencia.
-> 
-> > Returns: comando simple del frente. El comando devuelto sigue siendo propiedad del TAD. El resultado no es un "const scommand" ya que el llamador puede hacer modificaciones en el comando, siempre y cuando no lo destruya.
-
-```c
-scommand pipeline_front(const pipeline self);
-```
-
-> Elimina el comando de adelante de self, y la devuelve.
-> 
-> > El comando retornado es propiedad del llamador, y debe ser destruido.
-
-```c
-scommand pipeline_front_and_pop(pipeline self);
-```
-
-> Consulta si el pipeline tiene que esperar o no.
-> 
-> > Returns: ¿Hay que esperar en el pipeline self?
-
-```c
-bool pipeline_get_wait(const pipeline self);
-```
-
-> Genera una representación del pipeline en una cadena (aka "serializar").
-> 
-> > Returns: una cadena con la representación del pipeline similar a lo que se escribe en un shell. Debe destruirla el llamador.
-
-```c
-char* pipeline_to_string(const pipeline self);
-```
+    
 
 ### Test
 
@@ -398,8 +214,6 @@ test_execute.c:192:F:Functionality:test_external_1_simple_background:0: Assertio
 ```
 
     Esto se debe a que los test esperan que cuando el `pipeline` está seeteado para que no espere no se haga ningún `wait`, que sería lo lógico si se ignoraran los procesos zombies. Sin embargo, nosotros si estamos haciendo un `wait` para esperar al procesos que crea todos los hijos, y por eso es que los tests no dan.
-
-
 
 # Extra: nuestra forma de trabajar
 
