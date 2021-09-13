@@ -1,4 +1,4 @@
-# Alumnos
+# Informe lab 1
 
 - Fuentes, Tiffany
 - Renison, Iván
