@@ -1,4 +1,4 @@
-- [ ] Transcribir lo importante de la consigna a [consigna.md](consigna.md)
+- [x] Transcribir lo importante de la consigna a [consigna.md](consigna.md)
 - **Command**:
     - [x] Terminar `scommand_to_string` en [command.c](skeleton2021/command.c)
     - [x] Verificar que el TAD de command no tenga errores
@@ -18,12 +18,12 @@
     - [x] Modificar la funcion execute_pipeline para que no ocurra una funcion de input si se manda la misma al background, por ejemplo `wc &`.
 
 - **prompt**:
-    - [ ] Realizar el punto estrella.
+    - [x] Realizar el punto estrella.
 
 - Agregar comprensión en [informe.md](informe.md) de la parte de:
-    - [ ] `builtin` [builtin.c](skeleton2021/builtin.c)
-    - [ ] `execute` [execute.c](skeleton2021/execute.c)
-    - [ ] `parser` [parser.c](skeleton2021/parser.h)
+    - [x] `builtin` [builtin.c](skeleton2021/builtin.c)
+    - [x] `execute` [execute.c](skeleton2021/execute.c)
+    - [x] `parser` [parser.c](skeleton2021/parser.h)
     - [ ] `cash` [mybash.c](skeleton2021/mybash.c)
-    - [ ] [command.c](skeleton2021/command.c)
-- [ ] Modificar el parser.c
+    - [x] [command.c](skeleton2021/command.c)
+- [x] Modificar el parser.c
