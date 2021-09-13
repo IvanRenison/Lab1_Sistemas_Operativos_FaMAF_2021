@@ -137,7 +137,7 @@ Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`, en el GNU Bash
 
     A continuación hay un diagrama de como son las llamadas entre las funciones, en el cuál se puede ver cuando se hacen llamadas normales, y cuando se hacen llamadas haciendo primero un `fork` y llamando en el hijo.
 
-![Diagrama execute.png](Imagenes_informe\Diagrama%20execute.png)
+![Diagrama execute.png](Imagenes_informe/Diagrama_execute.jpg)
 
     Hay varias cosas que pueden resultar un poco extrañas sobre como están las llamadas. El motivo es para evitar que queden procesos zombies.
 
