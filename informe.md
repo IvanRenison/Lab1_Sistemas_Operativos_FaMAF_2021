@@ -373,7 +373,7 @@ Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`, en el GNU Bash
 
     A continuación hay un diagrama de como son las llamadas entre las funciones, en el cuál se puede ver cuando se hacen llamadas normales, y cuando se hacen llamadas haciendo primero un `fork` y llamando en el hijo.
 
-<img title="" src="Imagenes informe/Diagrama execute.svg" alt="Diagrama execute.svg" width="868">
+<img title="" src="Imagenes informe/Diagrama execute.svg" alt="Diagrama execute.svg" width="732">
 
     Hay varias cosas que pueden resultar un poco extrañas sobre como están las llamadas. El motivo es para evitar que queden procesos zombies.
 
@@ -388,6 +388,18 @@ Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`, en el GNU Bash
     Para solucionar eso, lo primero que se nos había ocurrido fue hacer una función que terminara todos los hijos zombies existentes (usando `waitpid`), y a esa función llamarla en cada siclo de `while` en la función `main`. Sin embargo, esa solución no es muy buena, porque solo se eliminan los zombies cuando se presiona enter en el `mybash`, y por ende pueden quedar un tiempo los procesos zombies.
 
     Luego encontramos que cuando un proceso termina, sos procesos hijos pasan a ser hijos de `init` y no se convierten en zombies al terminar, por lo cuál, hicimos que al ejecutar un `pipeline`, si está seeteado para que no espere, lo que se hace es crear un hijo que sea el encargado de crear todos los hijos (nietos del original), y a ese hijo, hacer que termine con `exit` cuando termina de crear todos los hijos. De esa forma, desde el proceso principal solo se espera a ese hijo, y cuando ese hijo termina, todos sus hijos (nietos del original) pasan a ser hijos de `init`.
+
+### Los test de execute:
+
+    Esa forma que encontramos de manejar los procesos zombies hace que al correr los test (`make test`) sale un error:
+
+```log
+test_execute.c:192:F:Functionality:test_external_1_simple_background:0: Assertion 'mock_counter_wait+mock_counter_waitpid == 0' failed
+```
+
+    Esto se debe a que los test esperan que cuando el `pipeline` está seeteado para que no espere no se haga ningún `wait`, que sería lo lógico si se ignoraran los procesos zombies. Sin embargo, nosotros si estamos haciendo un `wait` para esperar al procesos que crea todos los hijos, y por eso es que los tests no dan.
+
+
 
 # Extra: nuestra forma de trabajar
 
