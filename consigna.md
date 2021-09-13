@@ -1,9 +1,9 @@
 # Index
-- [Consigna](#Consigna)
-    - [Algunos consejos](#Algunos-consejos)
-- [Sobre la entrega del lab](#Sobre-la-entrega-del-lab)
-- [Puntos estrellas](#Puntos-estrellas)
-    - [Extras nuestros](#Extas-nuestros)
+- [Consigna](#consigna)
+    - [Algunos consejos](#algunos-consejos)
+- [Sobre la entrega del lab](#sobre-la-entrega-del-lab)
+- [Puntos estrellas](#puntos-estrellas)
+    - [Extras nuestros](#extas-nuestros)
 
 ---
 
