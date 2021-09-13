@@ -27,6 +27,24 @@
   - [Parser](#Parser)
 - [Extra: nuestra-forma-de-trabajar](#Extra:-nuestra-forma-de-trabajar)
 
+# ¿Cómo correrlo?
+```bash
+make
+```
+
+```bash
+./mybash
+```
+
+## Debuger
+```bash
+make
+```
+
+```bash
+valgrind ./mybash
+```
+
 # Comprensión
 
     Explicaciones simples de lo que hemos ido comprendiendo de los conceptos que fuimos implementando
