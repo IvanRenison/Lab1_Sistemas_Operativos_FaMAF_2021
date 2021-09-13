@@ -326,7 +326,7 @@ Referencia:
 
 ## Builtin
 
-    El módulo builtin, en el esqueleto venía con una función que decidía si un `pipeline` es interno, otra función que ejecutaba un `pipeline` de comandos internos y ademas, para cada comando interno, una función que decidía si un `pipeline` era ese comando interno.
+    El módulo `builtin`, en el esqueleto venía con una función que decidía si un `pipeline` es interno, otra función que ejecutaba un `pipeline` de comandos internos y ademas, para cada comando interno, una función que decidía si un `pipeline` era ese comando interno.
 
     Nosotros decidimos cambiar eso, ya que nos parecio que todas esas cosas eran cosas que aplicaban a un comando simple, y no a un pipeline, por lo cuál estructuramos el módulo de la siguete manera:
 
@@ -365,7 +365,29 @@ También es importante mencionar que en caso de que algun subdirectorio/carpeta 
 Ejemplo: path = ~/Archivos/~
 Se debe ejecutar `cd '~'/Archivos/~`, y no `cd '~'/Archivos/'~'`, en el GNU Bash cualquiera de los dos funciona, pero en nuestra implementación sólo se debe colocar `'~'` en el directorio si se refiere a un directorio/carpeta llamado `~`.
 
-## Parser
+## Execute
+
+    El módulo `execute` cuenta con una sola función en el `.h` que es `execute_pipeline`, y que se encarga de ejecutar un pipeline. En el `.c` hay una gran cantidad de funciones auxiliares que se llaman unas a otras.
+
+    Cada función tiene arriba una descripción de que hace, y las pre y pos condiciones que tiene.
+
+    A continuación hay un diagrama de como son las llamadas entre las funciones, en el cuál se puede ver cuando se hacen llamadas normales, y cuando se hacen llamadas haciendo primero un `fork` y llamando en el hijo.
+
+<img title="" src="Imagenes informe/Diagrama execute.svg" alt="Diagrama execute.svg" width="868">
+
+    Hay varias cosas que pueden resultar un poco extrañas sobre como están las llamadas. El motivo es para evitar que queden procesos zombies.
+
+### Los procesos zombies:
+
+    Cuando los procesos hijos terminan no son borrados por completo de la memoria de forma automatica, si no se se guarda cierta el información sobre la terminación del proceso para que el padre pueda acceder a esa información, y recien cuando accede esa información se borra. En C, con la función `wait` se puede esperar a que algún proceso hijo termine y obtener la información.
+
+    Para ejecutar los pipelines la información de como termino no es necesaria para nada, y es necesario esperar a que el proceso hijo termine solo cuando el `pipeline` está seeteado para esperar.
+
+    Si la única diferencia que se hace entre cuando esta para que espere, y cuando no, es hacer o no llamadas a `wait` después de crear los procesos hijos, lo que pasa es que cuando está seetado para que no espere los hijos terminan y quedan como procesos zombies.
+
+    Para solucionar eso, lo primero que se nos había ocurrido fue hacer una función que terminara todos los hijos zombies existentes (usando `waitpid`), y a esa función llamarla en cada siclo de `while` en la función `main`. Sin embargo, esa solución no es muy buena, porque solo se eliminan los zombies cuando se presiona enter en el `mybash`, y por ende pueden quedar un tiempo los procesos zombies.
+
+    Luego encontramos que cuando un proceso termina, sos procesos hijos pasan a ser hijos de `init` y no se convierten en zombies al terminar, por lo cuál, hicimos que al ejecutar un `pipeline`, si está seeteado para que no espere, lo que se hace es crear un hijo que sea el encargado de crear todos los hijos (nietos del original), y a ese hijo, hacer que termine con `exit` cuando termina de crear todos los hijos. De esa forma, desde el proceso principal solo se espera a ese hijo, y cuando ese hijo termina, todos sus hijos (nietos del original) pasan a ser hijos de `init`.
 
 # Extra: nuestra forma de trabajar
 
