@@ -21,7 +21,6 @@ Segundo cuatrimestre, FAMAF.
 * [strextra.c](skeleton2021/strextra.c)
 * [execute.c](skeleton2021/execute.c)
 * [prompt.c](skeleton2021/prompt.c)
-* [test_main.c](skeleton2021/test_main.c)
 
 **Estilo del código**
 
